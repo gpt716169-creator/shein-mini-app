@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shein Delivery</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Базовый стиль Shein/Apple */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000);
+            margin: 0;
+            padding: 16px;
+        }
+
+        /* Карточка */
+        .card {
+            background-color: var(--tg-theme-bg-color, #fff);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        h1 { font-size: 22px; margin: 0 0 10px 0; font-weight: 800; }
+        p { margin: 0; color: var(--tg-theme-hint-color, #888); font-size: 14px; }
+
+        /* Поле ввода */
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+        input[type="text"]:focus { border-color: #000; }
+
+        /* Кнопка */
+        .btn-black {
+            background-color: #000; /* Shein Style */
+            color: #fff;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .btn-black:active { opacity: 0.8; transform: scale(0.98); }
+
+        /* Статус */
+        .status-badge {
+            background: #e0f7fa; color: #006064;
+            padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <p>Добро пожаловать,</p>
+                <h1 id="username">Загрузка...</h1>
+            </div>
+            <div class="status-badge">Standart</div>
+        </div>
+        <p style="margin-top: 10px;">Баланс бонусов: <b style="color:#000;">0 ₽</b></p>
+    </div>
+
+    <div class="card">
+        <h3>🛒 Новый заказ</h3>
+        <p>Вставь ссылку на корзину или товар Shein</p>
+        <input type="text" id="sheinLink" placeholder="https://shein.com/...">
+        <button class="btn-black" onclick="sendToN8N()">Рассчитать стоимость</button>
+    </div>
+
+    <script>
+        // Инициализация
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // На весь экран
+
+        // Получаем данные юзера
+        let user = tg.initDataUnsafe.user;
+        
+        // Если открыли не в телеграмме (для теста)
+        if (!user) {
+            user = { first_name: "Тестовый User", id: 12345 }; 
+        }
+
+        document.getElementById('username').innerText = user.first_name;
+
+        // Логика отправки
+        function sendToN8N() {
+            let link = document.getElementById('sheinLink').value;
+
+            if (!link) {
+                tg.showAlert("Пожалуйста, вставьте ссылку!");
+                return;
+            }
+
+            // Показываем, что думаем
+            tg.MainButton.setText("Считаю...");
+            tg.MainButton.showProgress();
+            tg.MainButton.show();
+
+            // ВАЖНО: Сюда мы вставим твой Webhook из n8n позже
+            // Пока просто эмуляция
+            setTimeout(() => {
+                tg.MainButton.hideProgress();
+                tg.MainButton.hide();
+                tg.showAlert(`Ссылка отправлена! \nID: ${user.id} \nLink: ${link}`);
+                
+                // Тут потом будет переход на экран оплаты
+            }, 1000);
+            
+            // КОГДА НАСТРОИМ N8N, РАСКОММЕНТИРУЕМ ЭТОТ БЛОК:
+            /*
+            fetch('ТВОЙ_ВЕБХУК_N8N', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ tg_id: user.id, link: link, name: user.first_name })
+            });
+            */
+        }
+    </script>
+</body>
+</html>
