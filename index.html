@@ -514,11 +514,17 @@
             }
         }
         
-        // --- 3. ОТКРЫТИЕ ЧЕКАУТА (С ОБНОВЛЕНИЕМ КНОПКИ) ---
+        // --- 7. ЛОГИКА ЧЕКАУТА (ОТКРЫТИЕ/ЗАКРЫТИЕ) ---
         function openCheckoutOverlay() {
             // Передаем текущую сумму в кнопку оплаты
             const payButton = document.getElementById('checkout-pay-button');
             payButton.innerText = `Оплатить ${currentCartTotal.toLocaleString()} ₽`;
+
+            // Убеждаемся, что кнопка оплаты выключена, если корзина пуста
+            if (currentCartTotal === 0) {
+                 tg.showAlert("Ваша корзина пуста.");
+                 return;
+            }
 
             document.getElementById('checkout-overlay').classList.remove('translate-y-full');
             tg.BackButton.show();
@@ -756,4 +762,5 @@
     </script>
 </body>
 </html>
+
 
