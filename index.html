@@ -95,7 +95,7 @@
                 </div>
                 <div class="flex flex-col">
                     <span class="text-primary/80 text-xs font-medium tracking-widest uppercase">Добро пожаловать</span>
-                    <h2 class="text-white text-xl font-light leading-tight tracking-wide" id="home-username">Konstantin</h2>
+                    <h2 class="text-white text-xl font-light leading-tight tracking-wide" id="home-username">Загрузка...</h2>
                 </div>
             </div>
             <button class="flex size-10 items-center justify-center rounded-full glass text-white hover:bg-white/10 transition-colors">
@@ -115,7 +115,7 @@
                     <div class="flex justify-between items-start">
                         <div class="flex flex-col">
                             <span class="text-white/60 text-xs font-medium tracking-widest uppercase mb-1">Баланс баллов</span>
-                            <span class="text-white text-3xl font-bold tracking-tight">0 <span class="text-lg font-light text-primary">Pts</span></span>
+                            <span class="text-white text-3xl font-bold tracking-tight" id="user-points-display">0 <span class="text-lg font-light text-primary">Pts</span></span>
                         </div>
                         <div class="bg-white/10 p-2 rounded-lg backdrop-blur-md">
                             <span class="material-symbols-outlined text-white/90">qr_code_2</span>
@@ -124,10 +124,10 @@
                     <div class="flex justify-between items-end">
                         <div class="flex flex-col gap-1">
                             <span class="text-white/40 text-[10px] uppercase tracking-wider">ID Клиента</span>
-                            <span class="text-white/90 font-mono text-sm tracking-widest" id="loyalty-id">8920</span>
+                            <span class="text-white/90 font-mono text-sm tracking-widest" id="loyalty-id">...</span>
                         </div>
                         <div class="text-right">
-                            <p class="text-[#cd7f32] text-xs font-bold tracking-widest uppercase">Bronze Member</p>
+                            <p class="text-[#cd7f32] text-xs font-bold tracking-widest uppercase" id="loyalty-status">...</p>
                             <p class="text-white/50 text-[10px] uppercase mt-0.5">SHEINWIBE CLUB</p>
                         </div>
                     </div>
@@ -279,7 +279,7 @@
             <h2 class="text-white text-xl font-bold mt-4" id="profile-name">Konstantin</h2>
             <div class="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/5 mt-2">
                 <span class="material-symbols-outlined text-[#cd7f32] text-[16px]">star</span>
-                <p class="text-[#cd7f32] text-xs font-bold uppercase tracking-wider">Bronze Member</p>
+                <p class="text-[#cd7f32] text-xs font-bold uppercase tracking-wider" id="profile-status">Bronze Member</p>
             </div>
         </div>
 
@@ -395,38 +395,77 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Init User
+        // 1. ИНИЦИАЛИЗАЦИЯ И ПОДКЛЮЧЕНИЕ К БАЗЕ
         const user = tg.initDataUnsafe.user;
-        if (user) {
-            document.getElementById('home-username').innerText = user.first_name;
-            document.getElementById('profile-name').innerText = user.first_name + ' ' + (user.last_name || '');
-            document.getElementById('loyalty-id').innerText = user.id;
-            document.getElementById('checkout-name').value = user.first_name;
-        } else {
-            document.getElementById('home-username').innerText = "Гость";
-            document.getElementById('loyalty-id').innerText = "8821";
+        
+        async function initApp() {
+            // Тестовый юзер, если открыли не в ТГ
+            const userData = user || { id: 88888888, first_name: "Test", username: "guest" };
+            
+            // Если в ТГ, то ставим имя сразу (пока грузится база)
+            if(user) {
+                document.getElementById('home-username').innerText = user.first_name;
+                document.getElementById('profile-name').innerText = user.first_name;
+            }
+
+            try {
+                // ССЫЛКА НА ТВОЙ N8N
+                const API_URL = 'https://proshein.com/webhook-test/init-user'; 
+
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tg_id: userData.id,
+                        first_name: userData.first_name,
+                        username: userData.username
+                    })
+                });
+
+                const json = await res.json();
+
+                if (json.status === 'success') {
+                    // Обновляем данные из базы
+                    const data = json.data;
+
+                    document.getElementById('home-username').innerText = data.name;
+                    document.getElementById('profile-name').innerText = data.name;
+                    document.getElementById('loyalty-id').innerText = data.id;
+                    
+                    // Обновляем ID в корзине (если есть элемент)
+                    const clientIdEl = document.getElementById('client-id');
+                    if(clientIdEl) clientIdEl.innerText = `ID: ${data.id}`;
+
+                    // Баллы
+                    document.getElementById('user-points-display').innerHTML = `${data.points} <span class="text-lg font-light text-primary">Pts</span>`;
+
+                    // Статус
+                    document.getElementById('loyalty-status').innerText = `${data.status} Member`;
+                    document.getElementById('profile-status').innerText = `${data.status} Member`;
+                    
+                    // Заполнение имени в чекауте
+                    document.getElementById('checkout-name').value = data.name;
+                }
+
+            } catch (e) {
+                console.error('Ошибка связи с n8n:', e);
+            }
         }
+
+        // Запуск
+        initApp();
 
         // --- NAVIGATION LOGIC ---
         function switchTab(tabName) {
-            // 1. Hide all contents
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            
-            // 2. Reset nav buttons colors
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('text-primary');
                 el.classList.add('text-white/50');
             });
-
-            // 3. Show selected content
             document.getElementById('tab-' + tabName).classList.add('active');
-
-            // 4. Highlight selected button
             const activeBtn = document.getElementById('btn-' + tabName);
             activeBtn.classList.remove('text-white/50');
             activeBtn.classList.add('text-primary');
-
-            // Haptic
             tg.HapticFeedback.selectionChanged();
         }
 
@@ -460,7 +499,7 @@
             }
         }
 
-        // --- LINK PROCESSING (Пока только визуально) ---
+        // --- LINK PROCESSING (Пока заглушка) ---
         function processLink() {
             const link = document.getElementById('shein-link-input').value;
             if(!link) {
@@ -468,19 +507,15 @@
                 tg.showAlert("Сначала вставьте ссылку!");
                 return;
             }
-            
             tg.MainButton.setText("🔍 Ищем товар...");
             tg.MainButton.showProgress();
             tg.MainButton.show();
-            
             setTimeout(() => {
                 tg.MainButton.hideProgress();
                 tg.MainButton.hide();
                 tg.showAlert("Товар найден! Добавлен в корзину.");
-                switchTab('cart'); // Авто-переход в корзину
+                switchTab('cart'); 
             }, 1500);
-            
-            // СЮДА ПОТОМ ВСТАВИМ fetch() ЗАПРОС К n8n
         }
 
     </script>
