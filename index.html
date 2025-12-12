@@ -500,27 +500,72 @@
         }
 
         // --- LINK PROCESSING (Пока заглушка) ---
-        function processLink() {
-            const link = document.getElementById('shein-link-input').value;
+        // --- ОБРАБОТКА ССЫЛКИ (ПАРСИНГ) ---
+        async function processLink() {
+            const linkInput = document.getElementById('shein-link-input');
+            const link = linkInput.value;
+            
             if(!link) {
                 tg.HapticFeedback.notificationOccurred('error');
                 tg.showAlert("Сначала вставьте ссылку!");
                 return;
             }
-            tg.MainButton.setText("🔍 Ищем товар...");
+
+            // 1. Визуальный эффект загрузки
+            tg.MainButton.setText("⏳ Анализируем корзину...");
             tg.MainButton.showProgress();
             tg.MainButton.show();
-            setTimeout(() => {
+            
+            // Блокируем кнопку на сайте, чтобы не тыкали дважды
+            const btn = document.querySelector('button[onclick="processLink()"]');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> Ждите...`;
+            btn.disabled = true;
+
+            try {
+                // ВСТАВЬ СЮДА СВОЙ PRODUCTION URL ИЗ N8N (Parse Product)
+                const PARSE_URL = 'https://proshein.com/webhook/parse-shein'; 
+
+                const res = await fetch(PARSE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tg_id: user ? user.id : 12345, // ID юзера
+                        link: link // Ссылка на товар или корзину
+                    })
+                });
+
+                const json = await res.json();
+
+                if (json.status === 'success') {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    tg.showAlert("Готово! Товары добавлены в корзину.");
+                    linkInput.value = ''; // Очистить поле
+                    
+                    // Переходим в корзину и обновляем её
+                    switchTab('cart'); 
+                    // loadCart(); // Эту функцию мы напишем в следующем шаге
+                } else {
+                    throw new Error(json.message || 'Ошибка парсинга');
+                }
+
+            } catch (e) {
+                console.error(e);
+                tg.HapticFeedback.notificationOccurred('error');
+                tg.showAlert("Не удалось обработать ссылку. Проверьте формат.");
+            } finally {
+                // Возвращаем интерфейс в исходное состояние
                 tg.MainButton.hideProgress();
                 tg.MainButton.hide();
-                tg.showAlert("Товар найден! Добавлен в корзину.");
-                switchTab('cart'); 
-            }, 1500);
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
         }
 
     </script>
 </body>
 </html>
+
 
 
 
