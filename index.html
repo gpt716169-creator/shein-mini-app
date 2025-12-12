@@ -280,7 +280,7 @@
                 </div>
                 <div class="space-y-1.5">
                     <label class="text-[11px] font-bold uppercase tracking-wider text-white/50 ml-1">Телефон</label>
-                    <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" type="tel" placeholder="+7 999 ..."/>
+                    <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" type="tel" placeholder="+7 999 ..." id="checkout-phone"/>
                 </div>
                 
                 <div class="h-px bg-white/5 my-2"></div>
@@ -297,16 +297,16 @@
                     
                     <div id="address-container">
                         <label class="text-[11px] font-bold uppercase tracking-wider text-primary ml-1" id="lbl-address">Адрес ПВЗ (5Post)</label>
-                        <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" placeholder="Укажите адрес Пятерочки..." type="text"/>
+                        <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" placeholder="Укажите адрес Пятерочки..." type="text" id="checkout-address"/>
                     </div>
                 </div>
             </form>
         </div>
 
         <div class="p-6 border-t border-white/10 bg-background-dark/95 pb-8">
-            <button onclick="alert('Переход к оплате...')" class="w-full h-14 bg-primary text-[#101622] font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(19,236,91,0.3)]">
-                Оплатить 4,500 ₽
-            </button>
+            <button onclick="payOrder()" id="checkout-pay-button" class="w-full h-14 bg-primary text-[#101622] font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(19,236,91,0.3)]">
+    Оплатить 0 ₽
+ </button>
         </div>
     </div>
 
@@ -416,32 +416,172 @@
         }
 
         // --- CHECKOUT LOGIC ---
+        // --- 1. ПЕРЕМЕННАЯ ДЛЯ СУММЫ ---
+        // Хранит общую сумму корзины, рассчитанную в loadCart
+        let currentCartTotal = 0; 
+        
+
+        // --- 2. ФУНКЦИИ КОРЗИНЫ (LOAD CART И SUMMARIZE) ---
+        // Эти функции вы уже настроили, они просто обновлены, чтобы работать с финальным HTML
+        
+        function updateCartSummary(count, total) {
+            currentCartTotal = total;
+            const totalStr = total.toLocaleString() + ' ₽';
+            
+            const totalEl = document.getElementById('cart-total-price');
+            const subtotalEl = document.getElementById('cart-subtotal');
+            const badgeEl = document.getElementById('cart-count-badge');
+            const payButton = document.getElementById('checkout-pay-button');
+
+            if (totalEl) totalEl.innerText = totalStr;
+            if (subtotalEl) subtotalEl.innerText = totalStr;
+            if (badgeEl) badgeEl.innerText = count;
+            
+            // Обновление кнопки оплаты
+            if (payButton) {
+                payButton.innerText = `Оплатить ${totalStr}`;
+                payButton.disabled = count === 0;
+            }
+        }
+        
+        async function loadCart() {
+            // ... (ВАШ код loadCart остается как есть, он вызывает updateCartSummary в конце) ...
+            const container = document.getElementById('cart-container');
+            
+            container.innerHTML = `
+                <div class="animate-pulse flex gap-4 p-4 border border-white/5 rounded-2xl">
+                    <div class="bg-white/10 w-24 h-24 rounded-xl"></div>
+                    <div class="flex-1 space-y-2 py-2">
+                        <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                        <div class="h-3 bg-white/10 rounded w-1/2"></div>
+                    </div>
+                </div>`;
+
+            try {
+                const GET_CART_URL = 'https://proshein.com/webhook/get-cart';
+                const tgId = user ? user.id : 1332986231;
+
+                const res = await fetch(`${GET_CART_URL}?tg_id=${tgId}`);
+                const json = await res.json();
+
+                container.innerHTML = '';
+                let items = json.items || (Array.isArray(json) ? json : []);
+                
+                if (!items || items.length === 0) {
+                    container.innerHTML = `<div class="flex flex-col items-center justify-center pt-10 opacity-50"><span class="material-symbols-outlined text-[48px] mb-2">production_quantity_limits</span><p>Корзина пуста</p></div>`;
+                    updateCartSummary(0, 0);
+                    return;
+                }
+
+                let totalPrice = 0;
+
+                items.forEach(item => {
+                    const price = item.final_price_rub || 0;
+                    totalPrice += price;
+
+                    const html = `
+                    <div class="relative group p-4 rounded-2xl bg-dark-card/80 border border-white/5 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card mb-3">
+                        <button class="absolute top-4 right-4 text-white/30 hover:text-red-400 transition-colors p-1" onclick="deleteItem('${item.id}')">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                        </button>
+                        <div class="flex gap-4">
+                            <div class="relative h-24 w-24 shrink-0 rounded-xl overflow-hidden bg-white/5 border border-white/5 shadow-lg">
+                                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${item.image_url}');"></div>
+                            </div>
+                            <div class="flex flex-col flex-1 justify-between py-1">
+                                <div>
+                                    <h3 class="text-white font-medium text-sm leading-tight pr-8 line-clamp-2">${item.product_name}</h3>
+                                    <p class="text-white/40 text-xs mt-1">Размер: ${item.size || 'One Size'} • ID: ${item.shein_id}</p>
+                                </div>
+                                <div class="flex items-end justify-between">
+                                    <span class="text-primary font-bold text-lg">${price.toLocaleString()} ₽</span>
+                                    <div class="flex items-center gap-3 bg-white/5 rounded-full px-3 py-1 border border-white/5">
+                                        <span class="text-white font-medium text-sm w-4 text-center">1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+
+                updateCartSummary(items.length, totalPrice);
+
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<p class="text-center text-red-400 mt-10">Ошибка загрузки корзины</p>';
+                updateCartSummary(0, 0);
+            }
+        }
+        
+        // --- 3. ОТКРЫТИЕ ЧЕКАУТА (С ОБНОВЛЕНИЕМ КНОПКИ) ---
         function openCheckoutOverlay() {
+            // Передаем текущую сумму в кнопку оплаты
+            const payButton = document.getElementById('checkout-pay-button');
+            payButton.innerText = `Оплатить ${currentCartTotal.toLocaleString()} ₽`;
+
             document.getElementById('checkout-overlay').classList.remove('translate-y-full');
             tg.BackButton.show();
             tg.BackButton.onClick(closeCheckoutOverlay);
         }
+        
 
-        function closeCheckoutOverlay() {
-            document.getElementById('checkout-overlay').classList.add('translate-y-full');
-            tg.BackButton.hide();
-        }
-
-        function toggleDelivery() {
-            const isChecked = document.getElementById('delivery-toggle').checked;
-            const lbl = document.getElementById('lbl-address');
-            const input = document.getElementById('address-container').querySelector('input');
+        // --- 4. ФИНАЛЬНАЯ ОПЛАТА (CREATE ORDER) ---
+        async function payOrder() {
+            const nameInput = document.getElementById('checkout-name').value;
+            const phoneInput = document.getElementById('checkout-phone').value;
+            const addressInput = document.getElementById('checkout-address').value;
+            const deliveryToggle = document.getElementById('delivery-toggle').checked;
             
-            if (isChecked) {
-                lbl.innerText = "Домашний адрес (Индекс, Улица)";
-                lbl.classList.remove('text-primary');
-                lbl.classList.add('text-white');
-                input.placeholder = "123456, г. Москва, ул...";
-            } else {
-                lbl.innerText = "Адрес ПВЗ (5Post)";
-                lbl.classList.remove('text-white');
-                lbl.classList.add('text-primary');
-                input.placeholder = "Укажите адрес Пятерочки...";
+            if (!nameInput || !phoneInput || !addressInput) {
+                tg.HapticFeedback.notificationOccurred('error');
+                tg.showAlert("Пожалуйста, заполните все поля для доставки.");
+                return;
+            }
+
+            tg.MainButton.setText("✅ Подтверждаем заказ...");
+            tg.MainButton.showProgress();
+
+            try {
+                // ВЕБХУК ДЛЯ СОЗДАНИЯ ЗАКАЗА (Create Order)
+                const CREATE_ORDER_URL = 'https://proshein.com/webhook/create-order'; 
+                
+                const res = await fetch(CREATE_ORDER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tg_id: user ? user.id : 1332986231,
+                        
+                        user_info: {
+                            name: nameInput,
+                            phone: phoneInput,
+                            address: addressInput,
+                            delivery_method: deliveryToggle ? 'Почта РФ (Domestic)' : 'ПВЗ (5Post)',
+                        }
+                    })
+                });
+
+                const json = await res.json();
+
+                if (json.status === 'success' && json.order_id) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    tg.showAlert(`Заказ #${json.order_id} создан! Мы готовим ссылку на оплату.`);
+                    
+                    // Успех: очищаем корзину визуально и закрываем
+                    closeCheckoutOverlay();
+                    switchTab('home'); 
+                    loadCart(); // Обновляем корзину, чтобы она стала пустой
+
+                } else {
+                    throw new Error(json.message || 'Ошибка создания заказа');
+                }
+
+            } catch (e) {
+                console.error(e);
+                tg.HapticFeedback.notificationOccurred('error');
+                tg.showAlert("Ошибка при оформлении: " + e.message);
+            } finally {
+                tg.MainButton.hideProgress();
             }
         }
 
@@ -616,3 +756,4 @@
     </script>
 </body>
 </html>
+
