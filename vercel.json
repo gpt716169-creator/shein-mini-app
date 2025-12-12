@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api-n8n/:match*",
+      "destination": "https://proshein.com/webhook/:match*"
+    }
+  ]
+}
