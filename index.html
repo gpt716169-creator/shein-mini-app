@@ -1,136 +1,488 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html class="dark" lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shein Delivery</title>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>SHEINWIBE</title>
+    
+    <!-- Scripts & Fonts -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b", /* Neon Emerald */
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#101622",
+                        "surface-dark": "#162e20",
+                        "dark-card": "#1c2636",
+                        "emerald-rich": "#047857",
+                        "gold-accent": "#d4af37",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    backgroundImage: {
+                        'luxury-gradient': 'linear-gradient(180deg, rgba(6, 78, 59, 0.4) 0%, rgba(16, 22, 34, 0) 100%)',
+                        'card-gradient': 'linear-gradient(135deg, #1a3525 0%, #0f2b1d 100%)',
+                    }
+                },
+            },
+        }
+    </script>
+    
     <style>
-        /* Базовый стиль Shein/Apple */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000);
-            margin: 0;
-            padding: 16px;
+        /* Utilities */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        /* Карточка */
-        .card {
-            background-color: var(--tg-theme-bg-color, #fff);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        
+        .custom-input {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
         }
-
-        h1 { font-size: 22px; margin: 0 0 10px 0; font-weight: 800; }
-        p { margin: 0; color: var(--tg-theme-hint-color, #888); font-size: 14px; }
-
-        /* Поле ввода */
-        input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            margin-top: 15px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            font-size: 16px;
-            box-sizing: border-box;
+        .custom-input:focus {
+            background-color: rgba(22, 46, 32, 0.8);
+            border-color: #13ec5b;
+            box-shadow: 0 0 0 1px rgba(19, 236, 91, 0.2);
             outline: none;
-            transition: 0.3s;
         }
-        input[type="text"]:focus { border-color: #000; }
-
-        /* Кнопка */
-        .btn-black {
-            background-color: #000; /* Shein Style */
-            color: #fff;
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-        .btn-black:active { opacity: 0.8; transform: scale(0.98); }
-
-        /* Статус */
-        .status-badge {
-            background: #e0f7fa; color: #006064;
-            padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold;
-        }
+        
+        /* Fade Animation for Tabs */
+        .tab-content { display: none; animation: fadeIn 0.3s ease-out; }
+        .tab-content.active { display: flex; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        body { min-height: 100dvh; background-color: #101622; color: white; padding-bottom: 90px; }
     </style>
 </head>
-<body>
 
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <p>Добро пожаловать,</p>
-                <h1 id="username">Загрузка...</h1>
-            </div>
-            <div class="status-badge">Standart</div>
-        </div>
-        <p style="margin-top: 10px;">Баланс бонусов: <b style="color:#000;">0 ₽</b></p>
-    </div>
+<body class="antialiased font-display selection:bg-primary selection:text-black">
+    
+    <div class="fixed inset-0 pointer-events-none bg-luxury-gradient z-0"></div>
 
-    <div class="card">
-        <h3>🛒 Новый заказ</h3>
-        <p>Вставь ссылку на корзину или товар Shein</p>
-        <input type="text" id="sheinLink" placeholder="https://shein.com/...">
-        <button class="btn-black" onclick="sendToN8N()">Рассчитать стоимость</button>
-    </div>
-
-    <script>
-        // Инициализация
-        let tg = window.Telegram.WebApp;
-        tg.expand(); // На весь экран
-
-        // Получаем данные юзера
-        let user = tg.initDataUnsafe.user;
+    <!-- ================================================================================= -->
+    <!-- TAB 1: ГЛАВНАЯ (HOME) -->
+    <!-- ================================================================================= -->
+    <div id="tab-home" class="tab-content active relative flex-col w-full h-full">
         
-        // Если открыли не в телеграмме (для теста)
-        if (!user) {
-            user = { first_name: "Тестовый User", id: 12345 }; 
+        <!-- Header -->
+        <div class="relative z-10 flex items-center justify-between p-6 pt-8 pb-2">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <!-- Avatar -->
+                    <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-emerald-500/50 shadow-lg shadow-emerald-900/50" 
+                         style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAC502xdtgtUxB0-TaDsDJ2yB-sA5STxZ5K7wUUYSahfcwKfGfNfFTeU4c_3JHlka06UQ7khXYsmdNG2X6qroQodhf5VQ8jhT9bJINpACTXXwCG2tUB6ITSFDOKskXtPka2WPY3TwuJ_qKO4jgL_OriHT8jJYx3rlrKzS8EVmfMf0UnBaAa7ihyJm3W6RQBFR_HsTgJDkf0RHovw-IZmdsezNPGvS-Vx8wux_eDPTFoFC7YPYEHRztsAYNodW3TxrruVco7D5WrMe8u");'>
+                    </div>
+                    <div class="absolute bottom-0 right-0 size-3 bg-primary border-2 border-background-dark rounded-full"></div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-primary/80 text-xs font-medium tracking-widest uppercase">Добро пожаловать</span>
+                    <h2 class="text-white text-xl font-light leading-tight tracking-wide" id="home-username">Konstantin</h2>
+                </div>
+            </div>
+            <button class="flex size-10 items-center justify-center rounded-full glass text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+        </div>
+
+        <!-- Loyalty Card -->
+        <div class="px-6 py-4 relative z-10">
+            <div class="relative w-full aspect-[1.8/1] rounded-2xl overflow-hidden shadow-2xl shadow-emerald-900/40 transition-transform hover:scale-[1.01] duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#065f46] via-[#042f2e] to-[#020617] z-0"></div>
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay z-0"></div>
+                <!-- Shine effect -->
+                <div class="absolute -top-[100%] -left-[100%] w-[300%] h-[300%] bg-gradient-to-br from-transparent via-white/10 to-transparent rotate-45 transform pointer-events-none"></div>
+                
+                <div class="relative z-10 flex flex-col justify-between h-full p-6">
+                    <div class="flex justify-between items-start">
+                        <div class="flex flex-col">
+                            <span class="text-white/60 text-xs font-medium tracking-widest uppercase mb-1">Баланс баллов</span>
+                            <span class="text-white text-3xl font-bold tracking-tight">0 <span class="text-lg font-light text-primary">Pts</span></span>
+                        </div>
+                        <div class="bg-white/10 p-2 rounded-lg backdrop-blur-md">
+                            <span class="material-symbols-outlined text-white/90">qr_code_2</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-white/40 text-[10px] uppercase tracking-wider">ID Клиента</span>
+                            <span class="text-white/90 font-mono text-sm tracking-widest" id="loyalty-id">8920</span>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[#cd7f32] text-xs font-bold tracking-widest uppercase">Bronze Member</p>
+                            <p class="text-white/50 text-[10px] uppercase mt-0.5">SHEINWIBE CLUB</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Link Input (Главная функция) -->
+        <div class="px-6 py-2 relative z-10">
+            <div class="flex flex-col gap-4">
+                <label class="group flex flex-col gap-2">
+                    <span class="text-white/60 text-sm font-medium ml-1">Добавить товар</span>
+                    <div class="relative flex items-center">
+                        <div class="absolute left-4 text-primary flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined">link</span>
+                        </div>
+                        <input id="shein-link-input" class="w-full h-14 pl-12 pr-4 bg-[#1a2333]/80 border border-white/5 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-light" placeholder="Вставьте ссылку на товар или корзину Shein..." type="text"/>
+                        <button class="absolute right-2 p-2 bg-white/5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">content_paste</span>
+                        </button>
+                    </div>
+                </label>
+                <button onclick="processLink()" class="w-full h-14 bg-gradient-to-r from-primary to-emerald-600 rounded-xl flex items-center justify-center gap-2 text-[#101622] font-bold text-base shadow-[0_0_20px_rgba(19,236,91,0.3)] hover:shadow-[0_0_30px_rgba(19,236,91,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
+                    <span class="material-symbols-outlined">calculate</span>
+                    Рассчитать стоимость
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div class="px-6 pt-6 relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-white text-lg font-light tracking-wide">Активные заказы</h3>
+                <button class="text-primary text-sm font-medium hover:text-emerald-300 transition-colors">Все</button>
+            </div>
+            
+            <div class="flex flex-col gap-3 pb-8">
+                <!-- Example Item -->
+                <div class="group flex items-center gap-4 p-3 rounded-2xl bg-[#1c2636]/60 border border-white/5 hover:bg-[#1c2636] transition-all duration-300">
+                    <div class="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white/5">
+                        <div class="absolute inset-0 bg-cover bg-center" style='background-image: url("https://img.shein.com/images/shein.com/2024/05/17/17159336829707205167_thumbnail_600x799.jpg");'></div>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center">
+                        <div class="flex justify-between items-start">
+                            <h4 class="text-white font-medium text-sm line-clamp-1">Платье Emerald Silk</h4>
+                            <span class="text-white font-semibold text-sm">4,500 ₽</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-white/40 text-xs">Заказ #29381</p>
+                            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                                <span class="size-1.5 rounded-full bg-primary animate-pulse"></span>
+                                <span class="text-primary text-[10px] font-bold uppercase tracking-wider">Выкуп</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================================= -->
+    <!-- TAB 2: КОРЗИНА (CART) -->
+    <!-- ================================================================================= -->
+    <div id="tab-cart" class="tab-content relative flex-col w-full h-full">
+        
+        <!-- Header -->
+        <div class="relative z-10 flex items-center justify-between p-6 pt-8 pb-4">
+            <div class="w-10"></div> <!-- Spacer -->
+            <h1 class="text-white text-lg font-medium tracking-wide">Корзина</h1>
+            <div class="w-10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white/50">shopping_bag</span>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="px-6 space-y-4 relative z-10 flex-1 overflow-y-auto">
+            <!-- Item 1 -->
+            <div class="relative group p-4 rounded-2xl bg-dark-card/80 border border-white/5 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card">
+                <button class="absolute top-4 right-4 text-white/30 hover:text-red-400 transition-colors p-1">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                </button>
+                <div class="flex gap-4">
+                    <div class="relative h-24 w-24 shrink-0 rounded-xl overflow-hidden bg-white/5 border border-white/5 shadow-lg">
+                        <div class="absolute inset-0 bg-cover bg-center" style='background-image: url("https://img.shein.com/images/shein.com/2024/05/17/17159336829707205167_thumbnail_600x799.jpg");'></div>
+                    </div>
+                    <div class="flex flex-col flex-1 justify-between py-1">
+                        <div>
+                            <h3 class="text-white font-medium text-sm leading-tight pr-8">Платье Emerald Silk</h3>
+                            <p class="text-white/40 text-xs mt-1">M • Изумруд</p>
+                        </div>
+                        <div class="flex items-end justify-between">
+                            <span class="text-primary font-bold text-lg">4,500 ₽</span>
+                            <div class="flex items-center gap-3 bg-white/5 rounded-full px-3 py-1 border border-white/5">
+                                <button class="text-white/60 hover:text-white"><span class="material-symbols-outlined text-[16px]">remove</span></button>
+                                <span class="text-white font-medium text-sm w-4 text-center">1</span>
+                                <button class="text-white/60 hover:text-white"><span class="material-symbols-outlined text-[16px]">add</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary & Pay -->
+        <div class="px-6 mt-6 mb-24 relative z-10">
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/5 space-y-3 mb-4">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-white/60">Товары (1)</span>
+                    <span class="text-white font-medium">4,500 ₽</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-white/60">Доставка</span>
+                    <span class="text-primary font-medium">Бесплатно</span>
+                </div>
+                <div class="h-px bg-white/10 my-2"></div>
+                <div class="flex justify-between items-center">
+                    <span class="text-white font-semibold text-lg">Итого</span>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">4,500 ₽</span>
+                </div>
+            </div>
+            
+            <button onclick="openCheckoutOverlay()" class="w-full h-14 bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-xl flex items-center justify-center gap-3 text-white font-bold text-base shadow-[0_0_25px_rgba(5,150,105,0.4)] hover:shadow-[0_0_35px_rgba(5,150,105,0.6)] active:scale-[0.98] transition-all">
+                <span>Оплатить заказ</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ================================================================================= -->
+    <!-- TAB 3: ПРОФИЛЬ (PROFILE) -->
+    <!-- ================================================================================= -->
+    <div id="tab-profile" class="tab-content relative flex-col w-full h-full">
+        <div class="relative z-10 flex items-center justify-between p-6 pt-8 pb-4">
+            <h2 class="text-white text-lg font-bold leading-tight flex-1 text-center">Профиль</h2>
+            <div class="absolute right-6">
+                <span class="material-symbols-outlined text-white/50">settings</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center pt-6 relative z-10">
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-primary to-emerald-600 rounded-full opacity-75 blur"></div>
+                <div class="relative bg-center bg-no-repeat bg-cover rounded-full h-24 w-24 ring-4 ring-[#102216]" 
+                     style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAC502xdtgtUxB0-TaDsDJ2yB-sA5STxZ5K7wUUYSahfcwKfGfNfFTeU4c_3JHlka06UQ7khXYsmdNG2X6qroQodhf5VQ8jhT9bJINpACTXXwCG2tUB6ITSFDOKskXtPka2WPY3TwuJ_qKO4jgL_OriHT8jJYx3rlrKzS8EVmfMf0UnBaAa7ihyJm3W6RQBFR_HsTgJDkf0RHovw-IZmdsezNPGvS-Vx8wux_eDPTFoFC7YPYEHRztsAYNodW3TxrruVco7D5WrMe8u");'>
+                </div>
+            </div>
+            <h2 class="text-white text-xl font-bold mt-4" id="profile-name">Konstantin</h2>
+            <div class="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/5 mt-2">
+                <span class="material-symbols-outlined text-[#cd7f32] text-[16px]">star</span>
+                <p class="text-[#cd7f32] text-xs font-bold uppercase tracking-wider">Bronze Member</p>
+            </div>
+        </div>
+
+        <div class="px-6 pt-8 space-y-3 relative z-10">
+            <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-white/60">support_agent</span>
+                    <span class="text-white font-medium">Поддержка</span>
+                </div>
+                <span class="material-symbols-outlined text-white/30">chevron_right</span>
+            </button>
+            <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-white/60">location_on</span>
+                    <span class="text-white font-medium">Мои адреса</span>
+                </div>
+                <span class="material-symbols-outlined text-white/30">chevron_right</span>
+            </button>
+            <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-white/60">description</span>
+                    <span class="text-white font-medium">Оферта</span>
+                </div>
+                <span class="material-symbols-outlined text-white/30">chevron_right</span>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ================================================================================= -->
+    <!-- CHECKOUT OVERLAY (Скрытый слой оформления) -->
+    <!-- ================================================================================= -->
+    <div id="checkout-overlay" class="fixed inset-0 z-50 bg-background-dark transform translate-y-full transition-transform duration-300 flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 pt-8 border-b border-white/5 bg-background-dark/95 backdrop-blur-md">
+            <button onclick="closeCheckoutOverlay()" class="flex size-10 items-center justify-center rounded-full glass text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <h2 class="text-lg font-bold">Оформление</h2>
+            <div class="w-10"></div>
+        </div>
+
+        <!-- Form Scroll -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <form class="flex flex-col gap-4 bg-surface-dark/50 p-5 rounded-2xl border border-white/5">
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-bold uppercase tracking-wider text-white/50 ml-1">ФИО</label>
+                    <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" type="text" placeholder="Иванов Иван" id="checkout-name"/>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-bold uppercase tracking-wider text-white/50 ml-1">Телефон</label>
+                    <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" type="tel" placeholder="+7 999 ..."/>
+                </div>
+                
+                <div class="h-px bg-white/5 my-2"></div>
+                
+                <div class="space-y-3">
+                    <label class="text-[11px] font-bold uppercase tracking-wider text-white/50 ml-1">Доставка</label>
+                    <label class="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 cursor-pointer">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" id="delivery-toggle" class="peer sr-only" onchange="toggleDelivery()">
+                            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                        </div>
+                        <span class="text-sm font-medium text-white">Нет 5Post (Почта РФ)</span>
+                    </label>
+                    
+                    <div id="address-container">
+                        <label class="text-[11px] font-bold uppercase tracking-wider text-primary ml-1" id="lbl-address">Адрес ПВЗ (5Post)</label>
+                        <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" placeholder="Укажите адрес Пятерочки..." type="text"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Pay Button -->
+        <div class="p-6 border-t border-white/10 bg-background-dark/95 pb-8">
+            <button onclick="alert('Переход к оплате...')" class="w-full h-14 bg-primary text-[#101622] font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(19,236,91,0.3)]">
+                Оплатить 4,500 ₽
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ================================================================================= -->
+    <!-- BOTTOM NAVIGATION (FIXED) -->
+    <!-- ================================================================================= -->
+    <div class="fixed bottom-6 left-4 right-4 z-40">
+        <div class="glass h-16 rounded-2xl bg-[#102216]/80 backdrop-blur-xl flex items-center justify-around shadow-2xl shadow-black/50 border border-white/10">
+            
+            <!-- Home Tab -->
+            <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center justify-center w-12 h-12 text-primary transition-colors gap-1 active" id="btn-home">
+                <span class="material-symbols-outlined text-[26px]">home</span>
+            </button>
+            
+            <!-- Cart Tab -->
+            <button onclick="switchTab('cart')" class="nav-btn flex flex-col items-center justify-center w-12 h-12 text-white/50 hover:text-white transition-colors gap-1" id="btn-cart">
+                <div class="relative">
+                    <span class="material-symbols-outlined text-[26px]">shopping_bag</span>
+                    <span class="absolute -top-1 -right-1 size-2 bg-primary rounded-full"></span>
+                </div>
+            </button>
+            
+            <!-- Profile Tab -->
+            <button onclick="switchTab('profile')" class="nav-btn flex flex-col items-center justify-center w-12 h-12 text-white/50 hover:text-white transition-colors gap-1" id="btn-profile">
+                <span class="material-symbols-outlined text-[26px]">person</span>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Init User
+        const user = tg.initDataUnsafe.user;
+        if (user) {
+            document.getElementById('home-username').innerText = user.first_name;
+            document.getElementById('profile-name').innerText = user.first_name + ' ' + (user.last_name || '');
+            document.getElementById('loyalty-id').innerText = user.id;
+            document.getElementById('checkout-name').value = user.first_name;
+        } else {
+            document.getElementById('home-username').innerText = "Гость";
+            document.getElementById('loyalty-id').innerText = "8821";
         }
 
-        document.getElementById('username').innerText = user.first_name;
+        // --- NAVIGATION LOGIC ---
+        function switchTab(tabName) {
+            // 1. Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            
+            // 2. Reset nav buttons colors
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-primary');
+                el.classList.add('text-white/50');
+            });
 
-        // Логика отправки
-        function sendToN8N() {
-            let link = document.getElementById('sheinLink').value;
+            // 3. Show selected content
+            document.getElementById('tab-' + tabName).classList.add('active');
 
-            if (!link) {
-                tg.showAlert("Пожалуйста, вставьте ссылку!");
+            // 4. Highlight selected button
+            const activeBtn = document.getElementById('btn-' + tabName);
+            activeBtn.classList.remove('text-white/50');
+            activeBtn.classList.add('text-primary');
+
+            // Haptic
+            tg.HapticFeedback.selectionChanged();
+        }
+
+        // --- CHECKOUT LOGIC ---
+        function openCheckoutOverlay() {
+            document.getElementById('checkout-overlay').classList.remove('translate-y-full');
+            tg.BackButton.show();
+            tg.BackButton.onClick(closeCheckoutOverlay);
+        }
+
+        function closeCheckoutOverlay() {
+            document.getElementById('checkout-overlay').classList.add('translate-y-full');
+            tg.BackButton.hide();
+        }
+
+        function toggleDelivery() {
+            const isChecked = document.getElementById('delivery-toggle').checked;
+            const lbl = document.getElementById('lbl-address');
+            const input = document.getElementById('address-container').querySelector('input');
+            
+            if (isChecked) {
+                lbl.innerText = "Домашний адрес (Индекс, Улица)";
+                lbl.classList.remove('text-primary');
+                lbl.classList.add('text-white');
+                input.placeholder = "123456, г. Москва, ул...";
+            } else {
+                lbl.innerText = "Адрес ПВЗ (5Post)";
+                lbl.classList.remove('text-white');
+                lbl.classList.add('text-primary');
+                input.placeholder = "Укажите адрес Пятерочки...";
+            }
+        }
+
+        // --- LINK PROCESSING (Пока только визуально) ---
+        function processLink() {
+            const link = document.getElementById('shein-link-input').value;
+            if(!link) {
+                tg.HapticFeedback.notificationOccurred('error');
+                tg.showAlert("Сначала вставьте ссылку!");
                 return;
             }
-
-            // Показываем, что думаем
-            tg.MainButton.setText("Считаю...");
+            
+            tg.MainButton.setText("🔍 Ищем товар...");
             tg.MainButton.showProgress();
             tg.MainButton.show();
-
-            // ВАЖНО: Сюда мы вставим твой Webhook из n8n позже
-            // Пока просто эмуляция
+            
             setTimeout(() => {
                 tg.MainButton.hideProgress();
                 tg.MainButton.hide();
-                tg.showAlert(`Ссылка отправлена! \nID: ${user.id} \nLink: ${link}`);
-                
-                // Тут потом будет переход на экран оплаты
-            }, 1000);
+                tg.showAlert("Товар найден! Добавлен в корзину.");
+                switchTab('cart'); // Авто-переход в корзину
+            }, 1500);
             
-            // КОГДА НАСТРОИМ N8N, РАСКОММЕНТИРУЕМ ЭТОТ БЛОК:
-            /*
-            fetch('ТВОЙ_ВЕБХУК_N8N', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ tg_id: user.id, link: link, name: user.first_name })
-            });
-            */
+            // СЮДА ПОТОМ ВСТАВИМ fetch() ЗАПРОС К n8n
         }
+
     </script>
 </body>
 </html>
