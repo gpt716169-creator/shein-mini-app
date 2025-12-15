@@ -117,17 +117,14 @@
                     <div class="flex justify-between items-start">
                         <div class="flex flex-col">
                             <span class="text-white/60 text-xs font-medium tracking-widest uppercase mb-1">Баланс</span>
-                            <!-- Изменено на WIBE -->
                             <span class="text-white text-3xl font-bold tracking-tight" id="user-points-display">500 <span class="text-lg font-light text-primary">WIBE</span></span>
                         </div>
-                        <!-- Убрали QR код -->
                     </div>
                     <div class="flex justify-between items-end">
                         <div class="flex flex-col gap-1">
                             <span class="text-white/40 text-[10px] uppercase tracking-wider">ID Клиента</span>
                             <div class="flex items-center gap-2">
                                 <span class="text-white/90 font-mono text-sm tracking-widest" id="loyalty-id">...</span>
-                                <!-- Кнопка Копировать -->
                                 <button onclick="copyId()" class="text-primary hover:text-white transition-colors">
                                     <span class="material-symbols-outlined text-[16px]">content_copy</span>
                                 </button>
@@ -142,7 +139,7 @@
             </div>
         </div>
 
-        <!-- How to order (Placeholder) -->
+        <!-- How to order -->
         <div class="px-6 mb-2 relative z-10">
             <div class="bg-dark-card/50 border border-white/5 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition-colors">
                 <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
@@ -165,10 +162,8 @@
                         <div class="absolute left-4 text-primary flex items-center pointer-events-none">
                             <span class="material-symbols-outlined">link</span>
                         </div>
-                        <!-- Placeholder сокращен -->
                         <input id="shein-link-input" class="custom-input w-full h-14 pl-12 pr-12 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-light" placeholder="Вставьте ссылку" type="text"/>
                         
-                        <!-- Кнопка Вставить (активна) -->
                         <button onclick="pasteLink()" class="absolute right-2 p-2 bg-white/5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors">
                             <span class="material-symbols-outlined" style="font-size: 20px;">content_paste</span>
                         </button>
@@ -188,7 +183,6 @@
                 <button class="text-primary text-sm font-medium hover:text-emerald-300 transition-colors">Все</button>
             </div>
             <div class="flex flex-col gap-3 pb-8">
-                <!-- Заглушка, если пусто -->
                 <div class="p-6 text-center text-white/30 text-sm border border-dashed border-white/10 rounded-xl">
                     У вас пока нет активных заказов
                 </div>
@@ -219,14 +213,14 @@
         <div class="px-6 mt-4 mb-24 relative z-10">
             <!-- Купоны и Баллы -->
             <div class="flex gap-3 mb-4">
-                <button onclick="tg.showAlert('Купонов пока нет')" class="flex-1 bg-dark-card border border-white/10 rounded-xl h-12 flex items-center justify-center gap-2 text-sm text-white hover:bg-white/5 transition-colors">
+                <button onclick="openCouponsOverlay()" id="coupon-btn" class="flex-1 bg-dark-card border border-white/10 rounded-xl h-12 flex items-center justify-center gap-2 text-sm text-white hover:bg-white/5 transition-colors">
                     <span class="material-symbols-outlined text-primary text-[18px]">sell</span>
-                    Использовать купон
+                    <span id="coupon-text">Использовать купон</span>
                 </button>
             </div>
             <div class="mb-4 relative">
-                <input class="custom-input w-full rounded-xl px-4 h-12 text-sm" type="number" placeholder="Списать WIBE (доступно: 500)" />
-                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-primary text-xs font-bold uppercase cursor-pointer">Макс</span>
+                <input id="points-input" class="custom-input w-full rounded-xl px-4 h-12 text-sm" type="number" placeholder="Списать WIBE" oninput="applyPoints()"/>
+                <button onclick="useMaxPoints()" class="absolute right-4 top-1/2 -translate-y-1/2 text-primary text-xs font-bold uppercase cursor-pointer hover:opacity-80">МАКС</button>
             </div>
 
             <!-- Итого -->
@@ -234,6 +228,11 @@
                 <div class="flex justify-between items-center text-sm">
                     <span class="text-white/60">Товары (<span id="cart-count-badge">0</span>)</span>
                     <span class="text-white font-medium" id="cart-subtotal">0 ₽</span>
+                </div>
+                <!-- Скрытые поля для скидок -->
+                <div id="discount-row" class="flex justify-between items-center text-sm hidden text-primary">
+                    <span class="text-primary/60">Скидка</span>
+                    <span class="font-medium" id="cart-discount">-0 ₽</span>
                 </div>
                 <div class="flex justify-between items-center text-sm">
                     <span class="text-white/60">Доставка</span>
@@ -321,6 +320,92 @@
 
 
     <!-- ================================================================================= -->
+    <!-- COUPONS OVERLAY (МЕНЮ КУПОНОВ) -->
+    <!-- ================================================================================= -->
+    <div id="coupons-overlay" class="fixed inset-0 z-50 bg-background-dark transform translate-y-full transition-transform duration-300 flex flex-col">
+        <div class="flex items-center justify-between p-6 pt-8 border-b border-white/5 bg-background-dark/95 backdrop-blur-md">
+            <button onclick="closeCouponsOverlay()" class="flex size-10 items-center justify-center rounded-full glass text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <h2 class="text-lg font-bold">Мои купоны</h2>
+            <div class="w-10"></div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 space-y-4">
+            <!-- Coupon 1 -->
+            <div onclick="applyCoupon(100, 1000, 'SHEINWIBE100')" class="bg-surface-dark border border-dashed border-white/20 rounded-xl p-4 flex justify-between items-center cursor-pointer hover:bg-white/5">
+                <div>
+                    <p class="text-primary font-bold text-lg">100 ₽ OFF</p>
+                    <p class="text-white/50 text-xs">При заказе от 1000 ₽</p>
+                    <p class="text-white/30 text-[10px] mt-1">SHEINWIBE100</p>
+                </div>
+                <button class="bg-primary/10 text-primary px-4 py-2 rounded-lg text-xs font-bold">Применить</button>
+            </div>
+            <!-- Coupon 2 -->
+            <div onclick="applyCoupon(300, 2500, 'SHEINWIBE300')" class="bg-surface-dark border border-dashed border-white/20 rounded-xl p-4 flex justify-between items-center cursor-pointer hover:bg-white/5">
+                <div>
+                    <p class="text-primary font-bold text-lg">300 ₽ OFF</p>
+                    <p class="text-white/50 text-xs">При заказе от 2500 ₽</p>
+                    <p class="text-white/30 text-[10px] mt-1">SHEINWIBE300</p>
+                </div>
+                <button class="bg-primary/10 text-primary px-4 py-2 rounded-lg text-xs font-bold">Применить</button>
+            </div>
+            <!-- Coupon 3 -->
+             <div onclick="applyCoupon(500, 5000, 'VIP500')" class="bg-surface-dark border border-dashed border-white/20 rounded-xl p-4 flex justify-between items-center cursor-pointer hover:bg-white/5">
+                <div>
+                    <p class="text-gold-accent font-bold text-lg">500 ₽ OFF</p>
+                    <p class="text-white/50 text-xs">VIP: Заказ от 5000 ₽</p>
+                    <p class="text-white/30 text-[10px] mt-1">VIP500</p>
+                </div>
+                <button class="bg-gold-accent/10 text-gold-accent px-4 py-2 rounded-lg text-xs font-bold">Применить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================================= -->
+    <!-- PRODUCT OPTIONS OVERLAY (ВЫБОР РАЗМЕРА И ЦВЕТА) -->
+    <!-- ================================================================================= -->
+    <div id="product-options-overlay" class="fixed inset-0 z-[100] flex items-center justify-center px-4 animate-fade-in hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-md" onclick="closeProductOptions()"></div>
+        <div class="relative w-full max-w-[340px] bg-[#151c28] border border-white/10 rounded-[2rem] shadow-[0_20px_60px_-10px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[85vh]">
+            
+            <div class="relative w-full h-32 shrink-0">
+                <div id="overlay-product-image" class="absolute inset-0 bg-cover bg-center" style="background-image: url('');"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#151c28]"></div>
+                <button onclick="closeProductOptions()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+
+            <div class="flex-1 p-6 flex flex-col overflow-y-auto">
+                
+                <!-- Размер -->
+                <div class="mb-6">
+                    <h4 class="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold mb-2.5">Размер</h4>
+                    <div class="flex items-center gap-2 flex-wrap" id="size-buttons-container">
+                        <!-- JS Generated -->
+                    </div>
+                </div>
+
+                <!-- Цвет -->
+                <div class="mb-6">
+                    <h4 class="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold mb-2.5">Цвет</h4>
+                    <div class="flex items-center gap-3 flex-wrap pl-1" id="color-buttons-container">
+                        <!-- JS Generated -->
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-white/5 flex justify-between items-center">
+                    <button onclick="updateCartItem()" class="bg-primary text-[#102216] px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all w-full">
+                        Сохранить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================================================= -->
     <!-- CHECKOUT OVERLAY -->
     <!-- ================================================================================= -->
     <div id="checkout-overlay" class="fixed inset-0 z-50 bg-background-dark transform translate-y-full transition-transform duration-300 flex flex-col">
@@ -344,7 +429,6 @@
                 </div>
                 <div class="space-y-1.5">
                     <label class="text-[11px] font-bold uppercase tracking-wider text-white/50 ml-1">Email</label>
-                    <!-- Добавлено поле EMAIL -->
                     <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" type="email" placeholder="mail@example.com" id="checkout-email"/>
                 </div>
                 
@@ -362,16 +446,15 @@
                     
                     <div id="address-container">
                         <label class="text-[11px] font-bold uppercase tracking-wider text-primary ml-1" id="lbl-address">Адрес ПВЗ (5Post)</label>
-                        <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" placeholder="Город, Улица, Дом (Магазин Пятерочка)" type="text" id="checkout-address"/>
-                        <p class="text-[10px] text-white/30 mt-1 ml-1">Найдите адрес в приложении 5Post или Яндекс.Картах</p>
+                        <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" placeholder="Город, Улица, Дом" type="text" id="checkout-address"/>
+                        <p class="text-[10px] text-white/30 mt-1 ml-1">Найдите ближайший ПВЗ 5Post на карте</p>
                     </div>
                 </div>
                 
-                <!-- Галочка Оферты -->
                 <div class="flex items-start gap-3 mt-2">
                     <input type="checkbox" id="terms-checkbox" class="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 text-primary focus:ring-offset-0 focus:ring-0 cursor-pointer">
                     <label for="terms-checkbox" class="text-xs text-white/60 cursor-pointer">
-                        Я согласен с условиями <span class="text-primary underline">Публичной оферты</span> и даю согласие на обработку персональных данных.
+                        Я согласен с условиями <span class="text-primary underline">Публичной оферты</span>
                     </label>
                 </div>
 
@@ -416,18 +499,28 @@
         tg.expand();
         tg.enableClosingConfirmation();
 
-        let currentCartTotal = 0; 
+        // --- GLOBAL STATE ---
+        let cartSubtotal = 0;   
+        let currentDiscount = 0;
+        let currentPoints = 0;  
+        let userPointsBalance = 0; 
+        let finalTotal = 0;     
+        
+        // Храним данные корзины локально для редактирования
+        let cartItemsData = [];
+        let editingItemId = null;
+        let selectedSize = null;
+        let selectedColor = null;
         
         // --- 1. АВТОРИЗАЦИЯ ---
         const user = tg.initDataUnsafe.user;
         
         async function initApp() {
-            // Тестовый юзер
             const userData = user || { id: 1332986231, first_name: "Konstantin", username: "browser_test" };
             
             if(user) {
-                document.getElementById('home-username').innerText = user.first_name;
-                document.getElementById('profile-name').innerText = user.first_name;
+                if(document.getElementById('home-username')) document.getElementById('home-username').innerText = user.first_name;
+                if(document.getElementById('profile-name')) document.getElementById('profile-name').innerText = user.first_name;
             }
 
             try {
@@ -445,18 +538,19 @@
                 const json = await res.json();
                 if (json.status === 'success') {
                     const data = json.data;
-                    document.getElementById('home-username').innerText = data.name;
-                    document.getElementById('profile-name').innerText = data.name;
-                    document.getElementById('loyalty-id').innerText = data.id;
+                    if(document.getElementById('home-username')) document.getElementById('home-username').innerText = data.name;
+                    if(document.getElementById('profile-name')) document.getElementById('profile-name').innerText = data.name;
+                    if(document.getElementById('loyalty-id')) document.getElementById('loyalty-id').innerText = data.id;
                     
-                    // WIBE - Новым даем 500, если в базе 0
-                    let points = data.points || 0;
-                    if(points == 0) points = 500; // Логика бонуса новичка
+                    userPointsBalance = data.points || 0;
+                    if(userPointsBalance == 0) userPointsBalance = 500; 
 
-                    document.getElementById('user-points-display').innerHTML = `${points} <span class="text-lg font-light text-primary">WIBE</span>`;
-                    document.getElementById('loyalty-status').innerText = `${data.status}`;
-                    document.getElementById('profile-status').innerText = `${data.status}`;
-                    document.getElementById('checkout-name').value = data.name;
+                    if(document.getElementById('user-points-display')) document.getElementById('user-points-display').innerHTML = `${userPointsBalance} <span class="text-lg font-light text-primary">WIBE</span>`;
+                    if(document.getElementById('points-input')) document.getElementById('points-input').placeholder = `Списать WIBE (доступно: ${userPointsBalance})`;
+                    
+                    if(document.getElementById('loyalty-status')) document.getElementById('loyalty-status').innerText = `${data.status}`;
+                    if(document.getElementById('profile-status')) document.getElementById('profile-status').innerText = `${data.status}`;
+                    if(document.getElementById('checkout-name')) document.getElementById('checkout-name').value = data.name;
                 }
             } catch (e) {
                 console.error('Auth Error:', e);
@@ -467,19 +561,25 @@
 
         // --- УТИЛИТЫ ---
         function copyId() {
-            const id = document.getElementById('loyalty-id').innerText;
-            navigator.clipboard.writeText(id).then(() => {
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert('ID скопирован');
-            });
+            const idEl = document.getElementById('loyalty-id');
+            if(idEl) {
+                const id = idEl.innerText;
+                navigator.clipboard.writeText(id).then(() => {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    tg.showAlert('ID скопирован');
+                });
+            }
         }
 
         async function pasteLink() {
             try {
                 const text = await navigator.clipboard.readText();
                 if(text) {
-                    document.getElementById('shein-link-input').value = text;
-                    tg.HapticFeedback.selectionChanged();
+                    const input = document.getElementById('shein-link-input');
+                    if(input) {
+                        input.value = text;
+                        tg.HapticFeedback.selectionChanged();
+                    }
                 } else {
                     tg.showAlert('Буфер обмена пуст');
                 }
@@ -488,7 +588,6 @@
             }
         }
 
-        // --- СКРЫТИЕ МЕНЮ ПРИ КЛАВИАТУРЕ ---
         const inputs = document.querySelectorAll('input');
         inputs.forEach(input => {
             input.addEventListener('focus', () => {
@@ -499,28 +598,225 @@
             });
         });
 
-        // --- 2. КОРЗИНА ---
-        function updateCartSummary(count, total) {
-            currentCartTotal = total;
-            const totalStr = total.toLocaleString() + ' ₽';
+        // --- ЛОГИКА СКИДОК И БАЛЛОВ ---
+        function recalcTotal() {
+            if (currentPoints > cartSubtotal) {
+                currentPoints = cartSubtotal;
+                const pInput = document.getElementById('points-input');
+                if(pInput) pInput.value = currentPoints;
+            }
             
-            const totalEl = document.getElementById('cart-total-price');
-            const subtotalEl = document.getElementById('cart-subtotal');
-            const badgeEl = document.getElementById('cart-count-badge');
-            const payButton = document.getElementById('checkout-pay-button');
-
-            if (totalEl) totalEl.innerText = totalStr;
-            if (subtotalEl) subtotalEl.innerText = totalStr;
-            if (badgeEl) badgeEl.innerText = count;
+            finalTotal = Math.max(0, cartSubtotal - currentDiscount - currentPoints);
             
-            if (payButton) {
-                payButton.innerText = `Оплатить ${totalStr}`;
-                payButton.disabled = count === 0;
+            if (document.getElementById('cart-subtotal')) {
+                 document.getElementById('cart-subtotal').innerText = cartSubtotal.toLocaleString() + ' ₽';
+            }
+             if (document.getElementById('cart-total-price')) {
+                 document.getElementById('cart-total-price').innerText = finalTotal.toLocaleString() + ' ₽';
+            }
+            
+            const discountRow = document.getElementById('discount-row');
+            const discountVal = document.getElementById('cart-discount');
+            if (currentDiscount > 0 || currentPoints > 0) {
+                if (discountRow) discountRow.classList.remove('hidden');
+                let text = '';
+                if(currentDiscount > 0) text += `Купон: -${currentDiscount}₽ `;
+                if(currentPoints > 0) text += `WIBE: -${currentPoints}₽`;
+                if (discountVal) discountVal.innerText = text;
+            } else {
+                if (discountRow) discountRow.classList.add('hidden');
             }
         }
+
+        function useMaxPoints() {
+            if (cartSubtotal === 0) return;
+            
+            let maxAllowed = Math.floor(cartSubtotal * 0.5); 
+            let toWrite = Math.min(userPointsBalance, maxAllowed);
+            
+            let remainder = Math.max(0, cartSubtotal - currentDiscount);
+            toWrite = Math.min(toWrite, remainder);
+
+            const pInput = document.getElementById('points-input');
+            if(pInput) {
+                pInput.value = toWrite;
+                applyPoints();
+            }
+        }
+
+        function applyPoints() {
+            const input = document.getElementById('points-input');
+            if(!input) return;
+            let val = parseInt(input.value) || 0;
+            
+            if (val > userPointsBalance) {
+                val = userPointsBalance;
+                input.value = val;
+                tg.showAlert(`У вас только ${userPointsBalance} WIBE`);
+            }
+            
+            currentPoints = val;
+            recalcTotal();
+        }
+
+        // --- КУПОНЫ ---
+        function openCouponsOverlay() {
+            const overlay = document.getElementById('coupons-overlay');
+            if(overlay) overlay.classList.remove('translate-y-full');
+        }
         
+        function closeCouponsOverlay() {
+            const overlay = document.getElementById('coupons-overlay');
+            if(overlay) overlay.classList.add('translate-y-full');
+        }
+
+        function applyCoupon(discount, minOrder, code) {
+            if (cartSubtotal < minOrder) {
+                tg.HapticFeedback.notificationOccurred('error');
+                tg.showAlert(`Этот купон от ${minOrder} ₽`);
+                return;
+            }
+            
+            currentDiscount = discount;
+            const btn = document.getElementById('coupon-btn');
+            if(btn) {
+                btn.innerHTML = `<span class="material-symbols-outlined text-primary">check_circle</span> ${code} (-${discount}₽)`;
+                btn.classList.add('border-primary', 'text-primary');
+            }
+            
+            closeCouponsOverlay();
+            recalcTotal();
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        // --- КОЛИЧЕСТВО ---
+        function changeQuantity(id, delta) {
+            const item = cartItemsData.find(i => i.id == id);
+            if (!item) return;
+
+            // Если количество не установлено - ставим 1
+            if (!item.quantity) item.quantity = 1;
+            
+            item.quantity += delta;
+            if (item.quantity < 1) item.quantity = 1;
+
+            renderCartItems();
+            tg.HapticFeedback.selectionChanged();
+        }
+
+
+        // --- ПРОДУКТОВЫЕ ОПЦИИ (ВЫБОР РАЗМЕРА/ЦВЕТА) ---
+        function openProductOptions(id) {
+            const item = cartItemsData.find(i => i.id == id);
+            if (!item) return;
+            
+            editingItemId = id;
+            selectedSize = item.size === 'NOT_SELECTED' ? null : item.size;
+            selectedColor = item.color || "As shown";
+            
+            // 1. Ставим картинку
+            const imgEl = document.getElementById('overlay-product-image');
+            if(imgEl) imgEl.style.backgroundImage = `url('${item.image_url}')`;
+            
+            // 2. Рендерим размеры
+            const sizeContainer = document.getElementById('size-buttons-container');
+            if(sizeContainer) {
+                sizeContainer.innerHTML = '';
+                const options = (item.size_options && item.size_options.length > 0) 
+                    ? item.size_options 
+                    : [{name:'XS'}, {name:'S'}, {name:'M'}, {name:'L'}, {name:'XL'}];
+                
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    let classes = "w-10 h-10 rounded-lg border text-[12px] font-medium transition-all flex items-center justify-center mr-2 mb-2";
+                    if (opt.name === selectedSize) {
+                        classes += " bg-primary text-[#102216] font-bold border-primary shadow-lg shadow-primary/20";
+                    } else {
+                        classes += " bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:border-white/30 hover:text-white";
+                    }
+                    btn.className = classes;
+                    btn.innerText = opt.name;
+                    btn.onclick = () => selectSizeOption(opt.name);
+                    sizeContainer.appendChild(btn);
+                });
+            }
+
+            // 3. Рендерим цвета (Имитация, если их нет в базе)
+            const colorContainer = document.getElementById('color-buttons-container');
+            if(colorContainer) {
+                colorContainer.innerHTML = '';
+                // Если с сервера пришел только один цвет - покажем его. Если нет - дадим выбор.
+                // В будущем сюда передадим массив цветов из БД.
+                const colors = [
+                    {name: item.color || "As shown", hex: "#fff"}, 
+                    {name: "Black", hex: "#000"}, 
+                    {name: "White", hex: "#fff"},
+                    {name: "Green", hex: "#10b981"},
+                    {name: "Blue", hex: "#3b82f6"}
+                ];
+                
+                // Очищаем дубликаты
+                const uniqueColors = [...new Map(colors.map(item => [item['name'], item])).values()];
+
+                uniqueColors.forEach(col => {
+                    const btn = document.createElement('button');
+                    const isSelected = col.name === selectedColor;
+                    
+                    btn.className = `w-8 h-8 rounded-full border-2 transition-transform ${isSelected ? 'border-primary scale-110 ring-2 ring-primary/30' : 'border-transparent hover:scale-105'}`;
+                    btn.style.backgroundColor = col.hex;
+                    
+                    // Если цвет белый, добавим рамку чтобы видно было
+                    if(col.hex === '#fff') btn.classList.add('border-gray-500');
+
+                    btn.onclick = () => selectColorOption(col.name);
+                    colorContainer.appendChild(btn);
+                });
+            }
+            
+            // 4. Открываем
+            const overlay = document.getElementById('product-options-overlay');
+            if(overlay) overlay.classList.remove('hidden');
+        }
+
+        function selectSizeOption(size) {
+            selectedSize = size;
+            openProductOptions(editingItemId); 
+            tg.HapticFeedback.selectionChanged();
+        }
+
+        function selectColorOption(color) {
+            selectedColor = color;
+            openProductOptions(editingItemId);
+            tg.HapticFeedback.selectionChanged();
+        }
+
+        function closeProductOptions() {
+            const overlay = document.getElementById('product-options-overlay');
+            if(overlay) overlay.classList.add('hidden');
+        }
+
+        function updateCartItem() {
+            if (!selectedSize) {
+                tg.showAlert('Выберите размер!');
+                return;
+            }
+            
+            const itemIndex = cartItemsData.findIndex(i => i.id == editingItemId);
+            if (itemIndex > -1) {
+                cartItemsData[itemIndex].size = selectedSize;
+                cartItemsData[itemIndex].color = selectedColor;
+                
+                renderCartItems(); 
+                closeProductOptions();
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+
+        // --- 2. КОРЗИНА ---
         async function loadCart() {
             const container = document.getElementById('cart-container');
+            if (!container) return;
             
             container.innerHTML = `
                 <div class="animate-pulse flex gap-4 p-4 border border-white/5 rounded-2xl">
@@ -538,65 +834,127 @@
                 const res = await fetch(`${GET_CART_URL}?tg_id=${tgId}`);
                 const json = await res.json();
 
-                container.innerHTML = '';
-                let items = json.items || (Array.isArray(json) ? json : []);
+                cartItemsData = json.items || (Array.isArray(json) ? json : []);
                 
-                if (!items || items.length === 0) {
-                    container.innerHTML = `<div class="flex flex-col items-center justify-center pt-10 opacity-50"><span class="material-symbols-outlined text-[48px] mb-2">production_quantity_limits</span><p>Корзина пуста</p></div>`;
-                    updateCartSummary(0, 0);
-                    return;
-                }
-
-                let totalPrice = 0;
-
-                items.forEach(item => {
-                    const price = item.final_price_rub || 0;
-                    totalPrice += price;
-
-                    const html = `
-                    <div class="relative group p-4 rounded-2xl bg-dark-card/80 border border-white/5 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card mb-3">
-                        <button class="absolute top-4 right-4 text-white/30 hover:text-red-400 transition-colors p-1" onclick="deleteItem('${item.id}')">
-                            <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
-                        </button>
-                        <div class="flex gap-4">
-                            <div class="relative h-24 w-24 shrink-0 rounded-xl overflow-hidden bg-white/5 border border-white/5 shadow-lg">
-                                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${item.image_url}');"></div>
-                            </div>
-                            <div class="flex flex-col flex-1 justify-between py-1">
-                                <div>
-                                    <h3 class="text-white font-medium text-sm leading-tight pr-8 line-clamp-2">${item.product_name}</h3>
-                                    <p class="text-white/40 text-xs mt-1">
-                                        Размер: <span class="text-white">${item.size || 'One Size'}</span>
-                                        ${item.color ? ' • Цвет: <span class="text-white">' + item.color + '</span>' : ''}
-                                    </p>
-                                </div>
-                                <div class="flex items-end justify-between">
-                                    <span class="text-primary font-bold text-lg">${price.toLocaleString()} ₽</span>
-                                    <div class="flex items-center gap-3 bg-white/5 rounded-full px-3 py-1 border border-white/5">
-                                        <span class="text-white font-medium text-sm w-4 text-center">1</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                    container.insertAdjacentHTML('beforeend', html);
+                // Проставляем дефолтное количество 1, если его нет
+                cartItemsData.forEach(item => {
+                    if (!item.quantity) item.quantity = 1;
                 });
 
-                updateCartSummary(items.length, totalPrice);
+                renderCartItems();
 
             } catch (e) {
                 console.error(e);
                 container.innerHTML = '<p class="text-center text-red-400 mt-10">Ошибка загрузки корзины</p>';
-                updateCartSummary(0, 0);
+                cartSubtotal = 0;
+                recalcTotal();
             }
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+
+            if (!cartItemsData || cartItemsData.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center pt-10 opacity-50"><span class="material-symbols-outlined text-[48px] mb-2">production_quantity_limits</span><p>Корзина пуста</p></div>`;
+                cartSubtotal = 0;
+                if (document.getElementById('cart-count-badge')) {
+                   document.getElementById('cart-count-badge').innerText = 0;
+                }
+                recalcTotal();
+                return;
+            }
+
+            let totalPrice = 0;
+
+            cartItemsData.forEach(item => {
+                // Цена с учетом количества
+                const unitPrice = item.final_price_rub || 0;
+                const totalItemPrice = unitPrice * item.quantity;
+                totalPrice += totalItemPrice;
+
+                // ЛОГИКА РАЗМЕРА:
+                let infoHtml = '';
+                let warningClass = ''; 
+
+                if (item.size === 'NOT_SELECTED' || !item.size) {
+                    infoHtml = `
+                        <button class="mt-2 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg px-2 py-1 text-[10px] font-bold animate-pulse pointer-events-none flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">warning</span> Выберите параметры
+                        </button>`;
+                    warningClass = 'border-red-500/30 bg-red-900/5'; 
+                } else {
+                    infoHtml = `
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] text-white/70">
+                                ${item.size}
+                            </span>
+                            <span class="bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] text-white/70 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-white/50"></span> ${item.color || 'As shown'}
+                            </span>
+                        </div>`;
+                }
+
+                const html = `
+                <div onclick="openProductOptions('${item.id}')" class="relative group p-3 rounded-2xl bg-dark-card/80 border ${warningClass || 'border-white/5'} backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card mb-3 cursor-pointer active:scale-[0.99]">
+                    
+                    <button class="absolute top-3 right-3 text-white/20 hover:text-red-400 transition-colors p-1 z-20" onclick="event.stopPropagation(); deleteItem('${item.id}')">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                    </button>
+                    
+                    <div class="flex gap-3 pointer-events-none">
+                        <div class="relative w-20 h-24 shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/5 shadow-md">
+                            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${item.image_url}');"></div>
+                        </div>
+                        <div class="flex flex-col flex-1 justify-between py-0.5">
+                            <div>
+                                <h3 class="text-white font-medium text-xs leading-tight pr-6 line-clamp-2 mb-1">${item.product_name}</h3>
+                                ${infoHtml} 
+                            </div>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-primary font-bold text-base">${totalItemPrice.toLocaleString()} ₽</span>
+                                
+                                <!-- QUANTITY CONTROL -->
+                                <div class="flex items-center gap-3 bg-white/5 rounded-lg px-2 py-1 border border-white/5 pointer-events-auto" onclick="event.stopPropagation()">
+                                    <button class="w-5 h-5 flex items-center justify-center text-white/50 hover:text-white" onclick="changeQuantity('${item.id}', -1)">
+                                        <span class="material-symbols-outlined text-[14px]">remove</span>
+                                    </button>
+                                    <span class="text-white font-medium text-xs w-3 text-center">${item.quantity}</span>
+                                    <button class="w-5 h-5 flex items-center justify-center text-white/50 hover:text-white" onclick="changeQuantity('${item.id}', 1)">
+                                        <span class="material-symbols-outlined text-[14px]">add</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+            
+            cartSubtotal = totalPrice;
+            if (document.getElementById('cart-count-badge')) {
+                 document.getElementById('cart-count-badge').innerText = cartItemsData.length;
+            }
+            recalcTotal();
         }
         
         function openCheckoutOverlay() {
             const payButton = document.getElementById('checkout-pay-button');
-            payButton.innerText = `Оплатить ${currentCartTotal.toLocaleString()} ₽`;
+            if (payButton) {
+                payButton.innerText = `Оплатить ${finalTotal.toLocaleString()} ₽`;
+            }
             
-            if (currentCartTotal === 0) {
+            if (finalTotal === 0 && cartSubtotal === 0) {
                  tg.showAlert("Ваша корзина пуста.");
+                 return;
+            }
+            
+            const hasUnselected = cartItemsData.some(i => i.size === 'NOT_SELECTED' || !i.size);
+            if (hasUnselected) {
+                 tg.HapticFeedback.notificationOccurred('error');
+                 tg.showAlert("Пожалуйста, выберите размер для всех товаров!");
                  return;
             }
 
@@ -642,7 +1000,10 @@
                             email: emailInput,
                             address: addressInput,
                             delivery_method: deliveryToggle ? 'Почта РФ (Domestic)' : 'ПВЗ (5Post)',
-                        }
+                        },
+                        final_total: finalTotal,
+                        discount_applied: currentDiscount + currentPoints,
+                        items: cartItemsData // Отправляем актуальные данные (с кол-вом и размерами)
                     })
                 });
 
