@@ -5,6 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <title>SHEINWIBE</title>
     
+    <!-- Scripts & Fonts -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -50,14 +51,15 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
+        /* Исправление "белой полосы": жесткий фон */
         .custom-input {
-            background-color: rgba(255, 255, 255, 0.03);
+            background-color: #1a2333 !important; 
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             transition: all 0.3s ease;
         }
         .custom-input:focus {
-            background-color: rgba(22, 46, 32, 0.8);
+            background-color: #162e20 !important;
             border-color: #13ec5b;
             box-shadow: 0 0 0 1px rgba(19, 236, 91, 0.2);
             outline: none;
@@ -70,6 +72,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         body { min-height: 100dvh; background-color: #101622; color: white; padding-bottom: 90px; }
+        
+        /* Класс для скрытия меню при открытой клавиатуре */
+        .keyboard-open .bottom-nav-container { display: none !important; }
     </style>
 </head>
 
@@ -77,8 +82,12 @@
     
     <div class="fixed inset-0 pointer-events-none bg-luxury-gradient z-0"></div>
 
+    <!-- ================================================================================= -->
+    <!-- TAB 1: ГЛАВНАЯ (HOME) -->
+    <!-- ================================================================================= -->
     <div id="tab-home" class="tab-content active relative flex-col w-full h-full">
         
+        <!-- Header -->
         <div class="relative z-10 flex items-center justify-between p-6 pt-8 pb-2">
             <div class="flex items-center gap-3">
                 <div class="relative">
@@ -97,6 +106,7 @@
             </button>
         </div>
 
+        <!-- Loyalty Card -->
         <div class="px-6 py-4 relative z-10">
             <div class="relative w-full aspect-[1.8/1] rounded-2xl overflow-hidden shadow-2xl shadow-emerald-900/40 transition-transform hover:scale-[1.01] duration-300">
                 <div class="absolute inset-0 bg-gradient-to-br from-[#065f46] via-[#042f2e] to-[#020617] z-0"></div>
@@ -106,20 +116,25 @@
                 <div class="relative z-10 flex flex-col justify-between h-full p-6">
                     <div class="flex justify-between items-start">
                         <div class="flex flex-col">
-                            <span class="text-white/60 text-xs font-medium tracking-widest uppercase mb-1">Баланс баллов</span>
-                            <span class="text-white text-3xl font-bold tracking-tight" id="user-points-display">0 <span class="text-lg font-light text-primary">Pts</span></span>
+                            <span class="text-white/60 text-xs font-medium tracking-widest uppercase mb-1">Баланс</span>
+                            <!-- Изменено на WIBE -->
+                            <span class="text-white text-3xl font-bold tracking-tight" id="user-points-display">500 <span class="text-lg font-light text-primary">WIBE</span></span>
                         </div>
-                        <div class="bg-white/10 p-2 rounded-lg backdrop-blur-md">
-                            <span class="material-symbols-outlined text-white/90">qr_code_2</span>
-                        </div>
+                        <!-- Убрали QR код -->
                     </div>
                     <div class="flex justify-between items-end">
                         <div class="flex flex-col gap-1">
                             <span class="text-white/40 text-[10px] uppercase tracking-wider">ID Клиента</span>
-                            <span class="text-white/90 font-mono text-sm tracking-widest" id="loyalty-id">...</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-white/90 font-mono text-sm tracking-widest" id="loyalty-id">...</span>
+                                <!-- Кнопка Копировать -->
+                                <button onclick="copyId()" class="text-primary hover:text-white transition-colors">
+                                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-[#cd7f32] text-xs font-bold tracking-widest uppercase" id="loyalty-status">...</p>
+                            <p class="text-[#cd7f32] text-xs font-bold tracking-widest uppercase" id="loyalty-status">Bronze</p>
                             <p class="text-white/50 text-[10px] uppercase mt-0.5">SHEINWIBE CLUB</p>
                         </div>
                     </div>
@@ -127,6 +142,21 @@
             </div>
         </div>
 
+        <!-- How to order (Placeholder) -->
+        <div class="px-6 mb-2 relative z-10">
+            <div class="bg-dark-card/50 border border-white/5 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition-colors">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined">play_circle</span>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-white">Как оформить заказ?</p>
+                    <p class="text-xs text-white/50">Видео-инструкция за 1 минуту</p>
+                </div>
+                <span class="material-symbols-outlined text-white/30 ml-auto">chevron_right</span>
+            </div>
+        </div>
+
+        <!-- Link Input -->
         <div class="px-6 py-2 relative z-10">
             <div class="flex flex-col gap-4">
                 <label class="group flex flex-col gap-2">
@@ -135,8 +165,11 @@
                         <div class="absolute left-4 text-primary flex items-center pointer-events-none">
                             <span class="material-symbols-outlined">link</span>
                         </div>
-                        <input id="shein-link-input" class="w-full h-14 pl-12 pr-4 bg-[#1a2333]/80 border border-white/5 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-light" placeholder="Вставьте ссылку на товар или корзину Shein..." type="text"/>
-                        <button class="absolute right-2 p-2 bg-white/5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+                        <!-- Placeholder сокращен -->
+                        <input id="shein-link-input" class="custom-input w-full h-14 pl-12 pr-12 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-light" placeholder="Вставьте ссылку" type="text"/>
+                        
+                        <!-- Кнопка Вставить (активна) -->
+                        <button onclick="pasteLink()" class="absolute right-2 p-2 bg-white/5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors">
                             <span class="material-symbols-outlined" style="font-size: 20px;">content_paste</span>
                         </button>
                     </div>
@@ -148,49 +181,55 @@
             </div>
         </div>
 
+        <!-- Active Orders -->
         <div class="px-6 pt-6 relative z-10">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-white text-lg font-light tracking-wide">Активные заказы</h3>
                 <button class="text-primary text-sm font-medium hover:text-emerald-300 transition-colors">Все</button>
             </div>
-            
             <div class="flex flex-col gap-3 pb-8">
-                <div class="group flex items-center gap-4 p-3 rounded-2xl bg-[#1c2636]/60 border border-white/5 hover:bg-[#1c2636] transition-all duration-300">
-                    <div class="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white/5">
-                        <div class="absolute inset-0 bg-cover bg-center" style='background-image: url("https://img.shein.com/images/shein.com/2024/05/17/17159336829707205167_thumbnail_600x799.jpg");'></div>
-                    </div>
-                    <div class="flex flex-1 flex-col justify-center">
-                        <div class="flex justify-between items-start">
-                            <h4 class="text-white font-medium text-sm line-clamp-1">Платье Emerald Silk</h4>
-                            <span class="text-white font-semibold text-sm">4,500 ₽</span>
-                        </div>
-                        <div class="flex justify-between items-center mt-1">
-                            <p class="text-white/40 text-xs">Заказ #29381</p>
-                            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                                <span class="size-1.5 rounded-full bg-primary animate-pulse"></span>
-                                <span class="text-primary text-[10px] font-bold uppercase tracking-wider">Выкуп</span>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Заглушка, если пусто -->
+                <div class="p-6 text-center text-white/30 text-sm border border-dashed border-white/10 rounded-xl">
+                    У вас пока нет активных заказов
                 </div>
             </div>
         </div>
     </div>
 
 
+    <!-- ================================================================================= -->
+    <!-- TAB 2: КОРЗИНА (CART) -->
+    <!-- ================================================================================= -->
     <div id="tab-cart" class="tab-content relative flex-col w-full h-full">
-        
         <div class="relative z-10 flex items-center justify-between p-6 pt-8 pb-4">
-            <div class="w-10"></div> <h1 class="text-white text-lg font-medium tracking-wide">Корзина</h1>
+            <div class="w-10"></div>
+            <h1 class="text-white text-lg font-medium tracking-wide">Корзина</h1>
             <div class="w-10 flex items-center justify-center">
                 <span class="material-symbols-outlined text-white/50">shopping_bag</span>
             </div>
         </div>
 
+        <!-- Сюда JS загрузит товары -->
         <div id="cart-container" class="px-6 space-y-4 relative z-10 flex-1 overflow-y-auto">
+             <div class="flex flex-col items-center justify-center h-full opacity-50">
+                <p>Загрузка...</p>
+             </div>
+        </div>
+
+        <div class="px-6 mt-4 mb-24 relative z-10">
+            <!-- Купоны и Баллы -->
+            <div class="flex gap-3 mb-4">
+                <button onclick="tg.showAlert('Купонов пока нет')" class="flex-1 bg-dark-card border border-white/10 rounded-xl h-12 flex items-center justify-center gap-2 text-sm text-white hover:bg-white/5 transition-colors">
+                    <span class="material-symbols-outlined text-primary text-[18px]">sell</span>
+                    Использовать купон
+                </button>
+            </div>
+            <div class="mb-4 relative">
+                <input class="custom-input w-full rounded-xl px-4 h-12 text-sm" type="number" placeholder="Списать WIBE (доступно: 500)" />
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-primary text-xs font-bold uppercase cursor-pointer">Макс</span>
             </div>
 
-        <div class="px-6 mt-6 mb-24 relative z-10">
+            <!-- Итого -->
             <div class="p-5 rounded-2xl bg-white/5 border border-white/5 space-y-3 mb-4">
                 <div class="flex justify-between items-center text-sm">
                     <span class="text-white/60">Товары (<span id="cart-count-badge">0</span>)</span>
@@ -215,6 +254,9 @@
     </div>
 
 
+    <!-- ================================================================================= -->
+    <!-- TAB 3: ПРОФИЛЬ (PROFILE) -->
+    <!-- ================================================================================= -->
     <div id="tab-profile" class="tab-content relative flex-col w-full h-full">
         <div class="relative z-10 flex items-center justify-between p-6 pt-8 pb-4">
             <h2 class="text-white text-lg font-bold leading-tight flex-1 text-center">Профиль</h2>
@@ -233,11 +275,40 @@
             <h2 class="text-white text-xl font-bold mt-4" id="profile-name">Konstantin</h2>
             <div class="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/5 mt-2">
                 <span class="material-symbols-outlined text-[#cd7f32] text-[16px]">star</span>
-                <p class="text-[#cd7f32] text-xs font-bold uppercase tracking-wider" id="profile-status">Bronze Member</p>
+                <p class="text-[#cd7f32] text-xs font-bold uppercase tracking-wider" id="profile-status">Bronze</p>
             </div>
         </div>
 
         <div class="px-6 pt-8 space-y-3 relative z-10">
+            <!-- Реферальная система -->
+            <div class="bg-card-gradient border border-white/10 rounded-xl p-4 mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-white font-bold">Мои рефералы</span>
+                    <span class="text-primary text-xs bg-primary/10 px-2 py-0.5 rounded">Доход: 0 ₽</span>
+                </div>
+                <div class="flex gap-2">
+                    <input class="custom-input flex-1 h-10 rounded-lg text-xs px-3" value="https://t.me/sheinwibe_bot?start=ref123" readonly>
+                    <button class="bg-white/10 w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-white/20" onclick="tg.showAlert('Ссылка скопирована')">
+                        <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                    </button>
+                </div>
+                <div class="mt-3 flex items-center gap-2">
+                    <div class="flex -space-x-2">
+                        <div class="w-6 h-6 rounded-full bg-gray-500 border border-[#102216]"></div>
+                        <div class="w-6 h-6 rounded-full bg-gray-600 border border-[#102216]"></div>
+                        <div class="w-6 h-6 rounded-full bg-gray-700 border border-[#102216] flex items-center justify-center text-[8px] text-white">+0</div>
+                    </div>
+                    <span class="text-white/40 text-xs">Приглашено: 0 чел.</span>
+                </div>
+            </div>
+
+            <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-white/60">history</span>
+                    <span class="text-white font-medium">История заказов</span>
+                </div>
+                <span class="material-symbols-outlined text-white/30">chevron_right</span>
+            </button>
             <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-white/60">support_agent</span>
@@ -245,24 +316,13 @@
                 </div>
                 <span class="material-symbols-outlined text-white/30">chevron_right</span>
             </button>
-            <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-white/60">location_on</span>
-                    <span class="text-white font-medium">Мои адреса</span>
-                </div>
-                <span class="material-symbols-outlined text-white/30">chevron_right</span>
-            </button>
-            <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-white/60">description</span>
-                    <span class="text-white font-medium">Оферта</span>
-                </div>
-                <span class="material-symbols-outlined text-white/30">chevron_right</span>
-            </button>
         </div>
     </div>
 
 
+    <!-- ================================================================================= -->
+    <!-- CHECKOUT OVERLAY -->
+    <!-- ================================================================================= -->
     <div id="checkout-overlay" class="fixed inset-0 z-50 bg-background-dark transform translate-y-full transition-transform duration-300 flex flex-col">
         <div class="flex items-center justify-between p-6 pt-8 border-b border-white/5 bg-background-dark/95 backdrop-blur-md">
             <button onclick="closeCheckoutOverlay()" class="flex size-10 items-center justify-center rounded-full glass text-white">
@@ -282,6 +342,11 @@
                     <label class="text-[11px] font-bold uppercase tracking-wider text-white/50 ml-1">Телефон</label>
                     <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" type="tel" placeholder="+7 999 ..." id="checkout-phone"/>
                 </div>
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-bold uppercase tracking-wider text-white/50 ml-1">Email</label>
+                    <!-- Добавлено поле EMAIL -->
+                    <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" type="email" placeholder="mail@example.com" id="checkout-email"/>
+                </div>
                 
                 <div class="h-px bg-white/5 my-2"></div>
                 
@@ -297,21 +362,34 @@
                     
                     <div id="address-container">
                         <label class="text-[11px] font-bold uppercase tracking-wider text-primary ml-1" id="lbl-address">Адрес ПВЗ (5Post)</label>
-                        <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" placeholder="Укажите адрес Пятерочки..." type="text" id="checkout-address"/>
+                        <input class="custom-input w-full rounded-xl px-4 py-3 text-sm" placeholder="Город, Улица, Дом (Магазин Пятерочка)" type="text" id="checkout-address"/>
+                        <p class="text-[10px] text-white/30 mt-1 ml-1">Найдите адрес в приложении 5Post или Яндекс.Картах</p>
                     </div>
                 </div>
+                
+                <!-- Галочка Оферты -->
+                <div class="flex items-start gap-3 mt-2">
+                    <input type="checkbox" id="terms-checkbox" class="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 text-primary focus:ring-offset-0 focus:ring-0 cursor-pointer">
+                    <label for="terms-checkbox" class="text-xs text-white/60 cursor-pointer">
+                        Я согласен с условиями <span class="text-primary underline">Публичной оферты</span> и даю согласие на обработку персональных данных.
+                    </label>
+                </div>
+
             </form>
         </div>
 
         <div class="p-6 border-t border-white/10 bg-background-dark/95 pb-8">
             <button onclick="payOrder()" id="checkout-pay-button" class="w-full h-14 bg-primary text-[#101622] font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(19,236,91,0.3)]">
-    Оплатить 0 ₽
- </button>
+                Оплатить 0 ₽
+            </button>
         </div>
     </div>
 
 
-    <div class="fixed bottom-6 left-4 right-4 z-40">
+    <!-- ================================================================================= -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ================================================================================= -->
+    <div class="fixed bottom-6 left-4 right-4 z-40 bottom-nav-container">
         <div class="glass h-16 rounded-2xl bg-[#102216]/80 backdrop-blur-xl flex items-center justify-around shadow-2xl shadow-black/50 border border-white/10">
             
             <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center justify-center w-12 h-12 text-primary transition-colors gap-1 active" id="btn-home">
@@ -332,27 +410,28 @@
         </div>
     </div>
 
+    <!-- SCRIPTS -->
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.enableClosingConfirmation();
 
-        // 1. ИНИЦИАЛИЗАЦИЯ И ПОДКЛЮЧЕНИЕ К БАЗЕ
+        let currentCartTotal = 0; 
+        
+        // --- 1. АВТОРИЗАЦИЯ ---
         const user = tg.initDataUnsafe.user;
         
         async function initApp() {
-            // Тестовый юзер, если открыли не в ТГ
-            const userData = user || { id: 88888888, first_name: "Test", username: "guest" };
+            // Тестовый юзер
+            const userData = user || { id: 1332986231, first_name: "Konstantin", username: "browser_test" };
             
-            // Если в ТГ, то ставим имя сразу (пока грузится база)
             if(user) {
                 document.getElementById('home-username').innerText = user.first_name;
                 document.getElementById('profile-name').innerText = user.first_name;
             }
 
             try {
-                // ССЫЛКА НА ТВОЙ N8N
                 const API_URL = 'https://proshein.com/webhook/init-user'; 
-
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -364,66 +443,63 @@
                 });
 
                 const json = await res.json();
-
                 if (json.status === 'success') {
-                    // Обновляем данные из базы
                     const data = json.data;
-
                     document.getElementById('home-username').innerText = data.name;
                     document.getElementById('profile-name').innerText = data.name;
                     document.getElementById('loyalty-id').innerText = data.id;
                     
-                    // Обновляем ID в корзине (если есть элемент)
-                    const clientIdEl = document.getElementById('client-id');
-                    if(clientIdEl) clientIdEl.innerText = `ID: ${data.id}`;
+                    // WIBE - Новым даем 500, если в базе 0
+                    let points = data.points || 0;
+                    if(points == 0) points = 500; // Логика бонуса новичка
 
-                    // Баллы
-                    document.getElementById('user-points-display').innerHTML = `${data.points} <span class="text-lg font-light text-primary">Pts</span>`;
-
-                    // Статус
-                    document.getElementById('loyalty-status').innerText = `${data.status} Member`;
-                    document.getElementById('profile-status').innerText = `${data.status} Member`;
-                    
-                    // Заполнение имени в чекауте
+                    document.getElementById('user-points-display').innerHTML = `${points} <span class="text-lg font-light text-primary">WIBE</span>`;
+                    document.getElementById('loyalty-status').innerText = `${data.status}`;
+                    document.getElementById('profile-status').innerText = `${data.status}`;
                     document.getElementById('checkout-name').value = data.name;
                 }
-
             } catch (e) {
-                console.error('Ошибка связи с n8n:', e);
+                console.error('Auth Error:', e);
             }
         }
-
-        // Запуск
+        
         initApp();
 
-        // --- NAVIGATION LOGIC ---
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('text-primary');
-                el.classList.add('text-white/50');
+        // --- УТИЛИТЫ ---
+        function copyId() {
+            const id = document.getElementById('loyalty-id').innerText;
+            navigator.clipboard.writeText(id).then(() => {
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showAlert('ID скопирован');
             });
-            document.getElementById('tab-' + tabName).classList.add('active');
-            const activeBtn = document.getElementById('btn-' + tabName);
-            activeBtn.classList.remove('text-white/50');
-            activeBtn.classList.add('text-primary');
-            tg.HapticFeedback.selectionChanged();
-            
-            // Если нажали на корзину - обновляем её
-            if (tabName === 'cart') {
-                loadCart();
+        }
+
+        async function pasteLink() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if(text) {
+                    document.getElementById('shein-link-input').value = text;
+                    tg.HapticFeedback.selectionChanged();
+                } else {
+                    tg.showAlert('Буфер обмена пуст');
+                }
+            } catch (err) {
+                tg.showAlert('Не удалось вставить. Вставьте вручную.');
             }
         }
 
-        // --- CHECKOUT LOGIC ---
-        // --- 1. ПЕРЕМЕННАЯ ДЛЯ СУММЫ ---
-        // Хранит общую сумму корзины, рассчитанную в loadCart
-        let currentCartTotal = 0; 
-        
+        // --- СКРЫТИЕ МЕНЮ ПРИ КЛАВИАТУРЕ ---
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                document.body.classList.add('keyboard-open');
+            });
+            input.addEventListener('blur', () => {
+                document.body.classList.remove('keyboard-open');
+            });
+        });
 
-        // --- 2. ФУНКЦИИ КОРЗИНЫ (LOAD CART И SUMMARIZE) ---
-        // Эти функции вы уже настроили, они просто обновлены, чтобы работать с финальным HTML
-        
+        // --- 2. КОРЗИНА ---
         function updateCartSummary(count, total) {
             currentCartTotal = total;
             const totalStr = total.toLocaleString() + ' ₽';
@@ -437,7 +513,6 @@
             if (subtotalEl) subtotalEl.innerText = totalStr;
             if (badgeEl) badgeEl.innerText = count;
             
-            // Обновление кнопки оплаты
             if (payButton) {
                 payButton.innerText = `Оплатить ${totalStr}`;
                 payButton.disabled = count === 0;
@@ -445,7 +520,6 @@
         }
         
         async function loadCart() {
-            // ... (ВАШ код loadCart остается как есть, он вызывает updateCartSummary в конце) ...
             const container = document.getElementById('cart-container');
             
             container.innerHTML = `
@@ -475,30 +549,12 @@
 
                 let totalPrice = 0;
 
-               items.forEach(item => {
+                items.forEach(item => {
                     const price = item.final_price_rub || 0;
                     totalPrice += price;
 
-                    // ЛОГИКА РАЗМЕРА:
-                    let sizeHtml = '';
-                    let warningClass = ''; // Подсветка ошибки
-
-                    if (item.size === 'NOT_SELECTED' || !item.size) {
-                        // Если размер не выбран - кнопка выбора
-                        // Мы кодируем список вариантов прямо в кнопку, чтобы не делать лишний запрос
-                        const options = encodeURIComponent(JSON.stringify(item.size_options || []));
-                        sizeHtml = `
-                            <button onclick="openSizeSelector('${item.id}', '${options}')" class="mt-2 bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg px-3 py-1 text-xs font-bold animate-pulse">
-                                ⚠️ Выберите размер
-                            </button>`;
-                        warningClass = 'border-red-500/30 bg-red-900/10'; // Красная рамка карточки
-                    } else {
-                        // Если выбран - просто текст
-                        sizeHtml = `<p class="text-white/40 text-xs mt-1">Размер: <span class="text-white">${item.size}</span></p>`;
-                    }
-
                     const html = `
-                    <div class="relative group p-4 rounded-2xl bg-dark-card/80 border ${warningClass || 'border-white/5'} backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card mb-3">
+                    <div class="relative group p-4 rounded-2xl bg-dark-card/80 border border-white/5 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card mb-3">
                         <button class="absolute top-4 right-4 text-white/30 hover:text-red-400 transition-colors p-1" onclick="deleteItem('${item.id}')">
                             <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
                         </button>
@@ -509,11 +565,16 @@
                             <div class="flex flex-col flex-1 justify-between py-1">
                                 <div>
                                     <h3 class="text-white font-medium text-sm leading-tight pr-8 line-clamp-2">${item.product_name}</h3>
-                                    ${sizeHtml} 
-                                    <p class="text-white/20 text-[10px] mt-0.5">ID: ${item.shein_id}</p>
+                                    <p class="text-white/40 text-xs mt-1">
+                                        Размер: <span class="text-white">${item.size || 'One Size'}</span>
+                                        ${item.color ? ' • Цвет: <span class="text-white">' + item.color + '</span>' : ''}
+                                    </p>
                                 </div>
                                 <div class="flex items-end justify-between">
                                     <span class="text-primary font-bold text-lg">${price.toLocaleString()} ₽</span>
+                                    <div class="flex items-center gap-3 bg-white/5 rounded-full px-3 py-1 border border-white/5">
+                                        <span class="text-white font-medium text-sm w-4 text-center">1</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -530,13 +591,10 @@
             }
         }
         
-        // --- 7. ЛОГИКА ЧЕКАУТА (ОТКРЫТИЕ/ЗАКРЫТИЕ) ---
         function openCheckoutOverlay() {
-            // Передаем текущую сумму в кнопку оплаты
             const payButton = document.getElementById('checkout-pay-button');
             payButton.innerText = `Оплатить ${currentCartTotal.toLocaleString()} ₽`;
-
-            // Убеждаемся, что кнопка оплаты выключена, если корзина пуста
+            
             if (currentCartTotal === 0) {
                  tg.showAlert("Ваша корзина пуста.");
                  return;
@@ -547,17 +605,23 @@
             tg.BackButton.onClick(closeCheckoutOverlay);
         }
         
-
-        // --- 4. ФИНАЛЬНАЯ ОПЛАТА (CREATE ORDER) ---
         async function payOrder() {
             const nameInput = document.getElementById('checkout-name').value;
             const phoneInput = document.getElementById('checkout-phone').value;
+            const emailInput = document.getElementById('checkout-email').value;
             const addressInput = document.getElementById('checkout-address').value;
             const deliveryToggle = document.getElementById('delivery-toggle').checked;
+            const termsChecked = document.getElementById('terms-checkbox').checked;
             
-            if (!nameInput || !phoneInput || !addressInput) {
+            if (!nameInput || !phoneInput || !addressInput || !emailInput) {
                 tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert("Пожалуйста, заполните все поля для доставки.");
+                tg.showAlert("Пожалуйста, заполните все поля.");
+                return;
+            }
+
+            if (!termsChecked) {
+                tg.HapticFeedback.notificationOccurred('warning');
+                tg.showAlert("Необходимо принять условия оферты.");
                 return;
             }
 
@@ -565,7 +629,6 @@
             tg.MainButton.showProgress();
 
             try {
-                // ВЕБХУК ДЛЯ СОЗДАНИЯ ЗАКАЗА (Create Order)
                 const CREATE_ORDER_URL = 'https://proshein.com/webhook/create-order'; 
                 
                 const res = await fetch(CREATE_ORDER_URL, {
@@ -573,10 +636,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         tg_id: user ? user.id : 1332986231,
-                        
                         user_info: {
                             name: nameInput,
                             phone: phoneInput,
+                            email: emailInput,
                             address: addressInput,
                             delivery_method: deliveryToggle ? 'Почта РФ (Domestic)' : 'ПВЗ (5Post)',
                         }
@@ -587,13 +650,10 @@
 
                 if (json.status === 'success' && json.order_id) {
                     tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert(`Заказ #${json.order_id} создан! Мы готовим ссылку на оплату.`);
-                    
-                    // Успех: очищаем корзину визуально и закрываем
+                    tg.showAlert(`Заказ #${json.order_id} создан! Мы свяжемся с вами.`);
                     closeCheckoutOverlay();
                     switchTab('home'); 
-                    loadCart(); // Обновляем корзину, чтобы она стала пустой
-
+                    loadCart(); 
                 } else {
                     throw new Error(json.message || 'Ошибка создания заказа');
                 }
@@ -607,7 +667,30 @@
             }
         }
 
-        // --- ОБРАБОТКА ССЫЛКИ (ПАРСИНГ) ---
+        function closeCheckoutOverlay() {
+            document.getElementById('checkout-overlay').classList.add('translate-y-full');
+            tg.BackButton.hide();
+        }
+
+        function toggleDelivery() {
+            const isChecked = document.getElementById('delivery-toggle').checked;
+            const lbl = document.getElementById('lbl-address');
+            const input = document.getElementById('address-container').querySelector('input');
+            
+            if (isChecked) {
+                lbl.innerText = "Домашний адрес (Индекс, Улица)";
+                lbl.classList.remove('text-primary');
+                lbl.classList.add('text-white');
+                input.placeholder = "123456, г. Москва, ул...";
+            } else {
+                lbl.innerText = "Адрес ПВЗ (5Post)";
+                lbl.classList.remove('text-white');
+                lbl.classList.add('text-primary');
+                input.placeholder = "Укажите адрес Пятерочки...";
+            }
+        }
+
+        // --- 5. ПАРСИНГ ---
         async function processLink() {
             const linkInput = document.getElementById('shein-link-input');
             const link = linkInput.value;
@@ -618,27 +701,18 @@
                 return;
             }
 
-            // 1. Визуальный эффект загрузки
-            tg.MainButton.setText("⏳ Анализируем корзину...");
+            tg.MainButton.setText("⏳ Анализируем...");
             tg.MainButton.showProgress();
             tg.MainButton.show();
             
-            // Блокируем кнопку на сайте, чтобы не тыкали дважды
-            const btn = document.querySelector('button[onclick="processLink()"]');
-            const originalBtnText = btn.innerHTML;
-            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> Ждите...`;
-            btn.disabled = true;
-
             try {
-                // ВСТАВЬ СЮДА СВОЙ PRODUCTION URL ИЗ N8N (Parse Product)
                 const PARSE_URL = 'https://proshein.com/webhook/parse-shein'; 
-
                 const res = await fetch(PARSE_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        tg_id: user ? user.id : 12345, // ID юзера
-                        link: link // Ссылка на товар или корзину
+                        tg_id: user ? user.id : 1332986231,
+                        link: link
                     })
                 });
 
@@ -647,137 +721,48 @@
                 if (json.status === 'success') {
                     tg.HapticFeedback.notificationOccurred('success');
                     tg.showAlert("Готово! Товары добавлены в корзину.");
-                    linkInput.value = ''; // Очистить поле
-                    
-                    // Переходим в корзину и обновляем её
-                    switchTab('cart'); 
-                    // loadCart() вызовется автоматически внутри switchTab
+                    linkInput.value = ''; 
+                    switchTab('cart');
                 } else {
                     throw new Error(json.message || 'Ошибка парсинга');
                 }
 
             } catch (e) {
-                console.error(e);
                 tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert("Не удалось обработать ссылку. Проверьте формат.");
+                tg.showAlert("Не удалось обработать ссылку.");
             } finally {
-                // Возвращаем интерфейс в исходное состояние
                 tg.MainButton.hideProgress();
                 tg.MainButton.hide();
-                btn.innerHTML = originalBtnText;
-                btn.disabled = false;
             }
         }
 
-        // --- ЗАГРУЗКА КОРЗИНЫ (GET CART) ---
-        async function loadCart() {
-            const container = document.getElementById('cart-container');
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-primary');
+                el.classList.add('text-white/50');
+            });
             
-            // 1. Показываем скелетон/загрузку
-            container.innerHTML = `
-                <div class="animate-pulse flex gap-4 p-4 border border-white/5 rounded-2xl">
-                    <div class="bg-white/10 w-24 h-24 rounded-xl"></div>
-                    <div class="flex-1 space-y-2 py-2">
-                        <div class="h-4 bg-white/10 rounded w-3/4"></div>
-                        <div class="h-3 bg-white/10 rounded w-1/2"></div>
-                    </div>
-                </div>`;
+            const target = document.getElementById('tab-' + tabName);
+            if(target) target.classList.add('active');
 
-            try {
-                // ТВОЙ ВЕБХУК НА ПОЛУЧЕНИЕ КОРЗИНЫ
-                const GET_CART_URL = 'https://proshein.com/webhook/get-cart'; 
-                
-                // Берем ID текущего юзера
-                const tgId = user ? user.id : 12345;
+            const activeBtn = document.getElementById('btn-' + tabName);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-white/50');
+                activeBtn.classList.add('text-primary');
+            }
 
-                const res = await fetch(`${GET_CART_URL}?tg_id=${tgId}`);
-                const json = await res.json();
+            tg.HapticFeedback.selectionChanged();
 
-                // Очищаем контейнер
-                container.innerHTML = '';
-
-                let items = [];
-                // Разбираем ответ n8n (он может быть в items или просто массивом)
-                if (json.items) items = json.items;
-                else if (Array.isArray(json)) items = json;
-                
-                if (!items || items.length === 0) {
-                    container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center pt-10 opacity-50">
-                            <span class="material-symbols-outlined text-[48px] mb-2">production_quantity_limits</span>
-                            <p>Корзина пуста</p>
-                        </div>`;
-                    updateCartSummary(0, 0);
-                    return;
-                }
-
-                let totalPrice = 0;
-
-                // Генерируем карточки
-                items.forEach(item => {
-                    // Защита от кривой цены
-                    const price = item.final_price_rub || 0;
-                    totalPrice += price;
-
-                    const html = `
-                    <div class="relative group p-4 rounded-2xl bg-dark-card/80 border border-white/5 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card">
-                        <button class="absolute top-4 right-4 text-white/30 hover:text-red-400 transition-colors p-1" onclick="deleteItem('${item.id}')">
-                            <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
-                        </button>
-                        <div class="flex gap-4">
-                            <div class="relative h-24 w-24 shrink-0 rounded-xl overflow-hidden bg-white/5 border border-white/5 shadow-lg">
-                                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${item.image_url}');"></div>
-                            </div>
-                            <div class="flex flex-col flex-1 justify-between py-1">
-                                <div>
-                                    <h3 class="text-white font-medium text-sm leading-tight pr-8 line-clamp-2">${item.product_name}</h3>
-                                    <p class="text-white/40 text-xs mt-1">Размер: ${item.size || 'One Size'} • ID: ${item.shein_id}</p>
-                                </div>
-                                <div class="flex items-end justify-between">
-                                    <span class="text-primary font-bold text-lg">${price.toLocaleString()} ₽</span>
-                                    <div class="flex items-center gap-3 bg-white/5 rounded-full px-3 py-1 border border-white/5">
-                                        <span class="text-white font-medium text-sm w-4 text-center">1</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', html);
-                });
-
-                // Обновляем Итого
-                updateCartSummary(items.length, totalPrice);
-
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = '<p class="text-center text-red-400">Ошибка загрузки</p>';
+            if (tabName === 'cart') {
+                loadCart();
             }
         }
-
-        function updateCartSummary(count, total) {
-            const totalStr = total.toLocaleString() + ' ₽';
-            
-            const totalEl = document.getElementById('cart-total-price');
-            const subtotalEl = document.getElementById('cart-subtotal');
-            const badgeEl = document.getElementById('cart-count-badge');
-
-            if (totalEl) totalEl.innerText = totalStr;
-            if (subtotalEl) subtotalEl.innerText = totalStr;
-            if (badgeEl) badgeEl.innerText = count;
-        }
-
-        // Заглушка для удаления (пока просто алерт)
+        
         function deleteItem(dbId) {
-            if(confirm('Удалить товар?')) {
-                // Тут потом добавим вызов API удаления
-                alert('Пока удаление через базу данных :)');
-            }
+             tg.HapticFeedback.notificationOccurred('warning');
+             tg.showAlert(`Удаление пока работает через базу данных :)`);
         }
-
     </script>
 </body>
 </html>
-
-
-
