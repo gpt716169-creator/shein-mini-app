@@ -475,12 +475,30 @@
 
                 let totalPrice = 0;
 
-                items.forEach(item => {
+               items.forEach(item => {
                     const price = item.final_price_rub || 0;
                     totalPrice += price;
 
+                    // ЛОГИКА РАЗМЕРА:
+                    let sizeHtml = '';
+                    let warningClass = ''; // Подсветка ошибки
+
+                    if (item.size === 'NOT_SELECTED' || !item.size) {
+                        // Если размер не выбран - кнопка выбора
+                        // Мы кодируем список вариантов прямо в кнопку, чтобы не делать лишний запрос
+                        const options = encodeURIComponent(JSON.stringify(item.size_options || []));
+                        sizeHtml = `
+                            <button onclick="openSizeSelector('${item.id}', '${options}')" class="mt-2 bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg px-3 py-1 text-xs font-bold animate-pulse">
+                                ⚠️ Выберите размер
+                            </button>`;
+                        warningClass = 'border-red-500/30 bg-red-900/10'; // Красная рамка карточки
+                    } else {
+                        // Если выбран - просто текст
+                        sizeHtml = `<p class="text-white/40 text-xs mt-1">Размер: <span class="text-white">${item.size}</span></p>`;
+                    }
+
                     const html = `
-                    <div class="relative group p-4 rounded-2xl bg-dark-card/80 border border-white/5 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card mb-3">
+                    <div class="relative group p-4 rounded-2xl bg-dark-card/80 border ${warningClass || 'border-white/5'} backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-dark-card mb-3">
                         <button class="absolute top-4 right-4 text-white/30 hover:text-red-400 transition-colors p-1" onclick="deleteItem('${item.id}')">
                             <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
                         </button>
@@ -491,13 +509,11 @@
                             <div class="flex flex-col flex-1 justify-between py-1">
                                 <div>
                                     <h3 class="text-white font-medium text-sm leading-tight pr-8 line-clamp-2">${item.product_name}</h3>
-                                    <p class="text-white/40 text-xs mt-1">Размер: ${item.size || 'One Size'} • ID: ${item.shein_id}</p>
+                                    ${sizeHtml} 
+                                    <p class="text-white/20 text-[10px] mt-0.5">ID: ${item.shein_id}</p>
                                 </div>
                                 <div class="flex items-end justify-between">
                                     <span class="text-primary font-bold text-lg">${price.toLocaleString()} ₽</span>
-                                    <div class="flex items-center gap-3 bg-white/5 rounded-full px-3 py-1 border border-white/5">
-                                        <span class="text-white font-medium text-sm w-4 text-center">1</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -762,5 +778,6 @@
     </script>
 </body>
 </html>
+
 
 
