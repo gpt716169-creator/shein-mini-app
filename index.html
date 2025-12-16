@@ -1181,28 +1181,51 @@
             const profileContainer = document.getElementById('orders-list');
             const homeContainer = document.getElementById('home-orders-container');
             
+            // Если на странице нет контейнеров (мы на другой вкладке), просто выходим, 
+            // но сохраняем данные, если нужно
+            if (!profileContainer && !homeContainer) return;
+
+            // Показываем скелетон загрузки
+            const skeletonHtml = `
+                <div class="animate-pulse flex items-center gap-4 p-3 rounded-2xl bg-[#1c2636]/60 border border-white/5">
+                    <div class="h-16 w-16 bg-white/5 rounded-xl"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                        <div class="h-3 bg-white/10 rounded w-1/4"></div>
+                    </div>
+                </div>`;
+
+            if (profileContainer) profileContainer.innerHTML = skeletonHtml;
+            if (homeContainer) homeContainer.innerHTML = skeletonHtml;
+
             try {
                 const GET_ORDERS_URL = 'https://proshein.com/webhook/get-orders';
+                // Используем ID реального юзера или тестовый
                 const tgId = user ? user.id : 1332986231;
 
+                console.log('Загружаю заказы для:', tgId); // Для отладки
+
                 const res = await fetch(`${GET_ORDERS_URL}?tg_id=${tgId}`);
+                const json = await res.json();
                 
-                // Безопасный парсинг JSON
-                const text = await res.text();
-                if (!text) return; // Просто выходим если пусто, не ломая интерфейс
-                const json = JSON.parse(text);
-                
+                console.log('Ответ сервера:', json); // Увидишь в консоли (через инструменты разработчика), что пришло
+
+                // Читаем массив из поля orders
                 let orders = [];
-                if (Array.isArray(json)) {
+                if (json.orders && Array.isArray(json.orders)) {
+                    orders = json.orders;
+                } else if (Array.isArray(json)) {
+                    // На случай, если n8n вернул массив напрямую
                     orders = json;
-                } else if (json.items && Array.isArray(json.items)) {
-                    orders = json.items;
                 }
 
+                // Сохраняем глобально
                 ordersData = orders;
 
                 // --- А. ОБНОВЛЯЕМ ПРОФИЛЬ ---
                 if (profileContainer) {
+                    profileContainer.innerHTML = ''; // Чистим
+                    
                     if (orders.length === 0) {
                         profileContainer.innerHTML = `
                             <div class="flex flex-col items-center justify-center py-6 opacity-30">
@@ -1210,7 +1233,6 @@
                                  <p class="text-xs">История заказов пуста</p>
                             </div>`;
                     } else {
-                        profileContainer.innerHTML = ''; // Чистим
                         orders.forEach(order => {
                             renderOrderCard(profileContainer, order, 'profile');
                         });
@@ -1219,21 +1241,24 @@
 
                 // --- Б. ОБНОВЛЯЕМ ГЛАВНУЮ ---
                 if (homeContainer) {
+                    homeContainer.innerHTML = ''; // Чистим
+                    
                     if (orders.length === 0) {
                         homeContainer.innerHTML = `
                             <div class="p-4 text-center text-white/30 text-xs border border-dashed border-white/10 rounded-xl">
                                 Нет активных заказов
                             </div>`;
                     } else {
-                        homeContainer.innerHTML = ''; // Чистим
-                        // Берем только ПЕРВЫЙ (самый свежий) заказ для главной
+                        // На главной показываем ТОЛЬКО последний заказ (первый в списке)
                         renderOrderCard(homeContainer, orders[0], 'home');
                     }
                 }
 
             } catch (e) {
-                console.error(e);
-                if (profileContainer) profileContainer.innerHTML = '<div class="text-center text-red-400 py-4 text-xs">Ошибка загрузки</div>';
+                console.error('Ошибка loadOrders:', e);
+                const errorHtml = '<div class="text-center text-red-400 py-4 text-xs">Ошибка загрузки</div>';
+                if (profileContainer) profileContainer.innerHTML = errorHtml;
+                if (homeContainer) homeContainer.innerHTML = errorHtml;
             }
         }
 
@@ -1412,3 +1437,4 @@
     </script>
 </body>
 </html>
+
