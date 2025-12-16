@@ -51,7 +51,6 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
-        /* Исправление "белой полосы": жесткий фон */
         .custom-input {
             background-color: #1a2333 !important; 
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -65,7 +64,6 @@
             outline: none;
         }
         
-        /* Fade Animation for Tabs */
         .tab-content { display: none; animation: fadeIn 0.3s ease-out; }
         .tab-content.active { display: flex; }
         
@@ -73,7 +71,6 @@
         
         body { min-height: 100dvh; background-color: #101622; color: white; padding-bottom: 90px; }
         
-        /* Класс для скрытия меню при открытой клавиатуре */
         .keyboard-open .bottom-nav-container { display: none !important; }
     </style>
 </head>
@@ -183,12 +180,11 @@
                 <button onclick="switchTab('profile')" class="text-primary text-sm font-medium hover:text-emerald-300 transition-colors">Все</button>
             </div>
             
-            <!-- СЮДА СКРИПТ ВСТАВИТ ЗАКАЗ -->
             <div id="home-orders-container" class="flex flex-col gap-3 pb-8">
-                <!-- Скелетон загрузки -->
                 <div class="animate-pulse h-20 bg-white/5 rounded-2xl border border-white/5"></div>
             </div>
         </div>
+    </div>
 
 
     <!-- ================================================================================= -->
@@ -203,7 +199,6 @@
             </div>
         </div>
 
-        <!-- Сюда JS загрузит товары -->
         <div id="cart-container" class="px-6 space-y-4 relative z-10 flex-1 overflow-y-auto">
              <div class="flex flex-col items-center justify-center h-full opacity-50">
                 <p>Загрузка...</p>
@@ -229,7 +224,6 @@
                     <span class="text-white/60">Товары (<span id="cart-count-badge">0</span>)</span>
                     <span class="text-white font-medium" id="cart-subtotal">0 ₽</span>
                 </div>
-                <!-- Скрытые поля для скидок -->
                 <div id="discount-row" class="flex justify-between items-center text-sm hidden text-primary">
                     <span class="text-primary/60">Скидка</span>
                     <span class="font-medium" id="cart-discount">-0 ₽</span>
@@ -279,8 +273,9 @@
         </div>
 
         <div class="px-6 pt-8 space-y-3 relative z-10">
-            <!-- Реферальная система -->
-            <div class="bg-card-gradient border border-white/10 rounded-xl p-4 mb-4">
+            
+             <!-- Реферальная система -->
+             <div class="bg-card-gradient border border-white/10 rounded-xl p-4 mb-4">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-white font-bold">Мои рефералы</span>
                     <span class="text-primary text-xs bg-primary/10 px-2 py-0.5 rounded">Доход: 0 ₽</span>
@@ -301,27 +296,30 @@
                 </div>
             </div>
 
-            <!-- СПИСОК ЗАКАЗОВ (Вместо кнопки) -->
+            <!-- БЛОК ЗАКАЗОВ -->
             <div class="mb-6">
-                <div class="flex justify-between items-end mb-3 px-1">
+                <div class="flex justify-between items-end mb-4 px-1">
                     <h3 class="text-white font-bold text-lg">Мои заказы</h3>
-                    <button onclick="loadOrders()" class="text-primary text-xs flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[14px]">refresh</span> Обновить
+                    <button onclick="loadOrders()" class="text-primary/50 text-xs flex items-center gap-1 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-[14px]">refresh</span>
                     </button>
                 </div>
                 
-                <!-- Контейнер, куда JS вставит карточки -->
                 <div id="orders-list" class="space-y-3 min-h-[100px]">
-                    <div class="text-center text-white/30 py-4 text-xs">Загрузка истории...</div>
+                    <div class="flex flex-col items-center justify-center py-6 opacity-30">
+                         <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                         <p class="text-xs">История пуста</p>
+                    </div>
                 </div>
             </div>
-            <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
+
+            <div class="p-4 rounded-xl bg-surface-dark border border-white/5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors">
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-white/60">support_agent</span>
                     <span class="text-white font-medium">Поддержка</span>
                 </div>
                 <span class="material-symbols-outlined text-white/30">chevron_right</span>
-            </button>
+            </div>
         </div>
     </div>
 
@@ -370,7 +368,7 @@
     </div>
 
     <!-- ================================================================================= -->
-    <!-- PRODUCT OPTIONS OVERLAY (ВЫБОР РАЗМЕРА И ЦВЕТА) -->
+    <!-- PRODUCT OPTIONS OVERLAY -->
     <!-- ================================================================================= -->
     <div id="product-options-overlay" class="fixed inset-0 z-[100] flex items-center justify-center px-4 animate-fade-in hidden">
         <div class="absolute inset-0 bg-black/70 backdrop-blur-md" onclick="closeProductOptions()"></div>
@@ -385,21 +383,16 @@
             </div>
 
             <div class="flex-1 p-6 flex flex-col overflow-y-auto">
-                
                 <!-- Размер -->
                 <div class="mb-6">
                     <h4 class="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold mb-2.5">Размер</h4>
-                    <div class="flex items-center gap-2 flex-wrap" id="size-buttons-container">
-                        <!-- JS Generated -->
-                    </div>
+                    <div class="flex items-center gap-2 flex-wrap" id="size-buttons-container"></div>
                 </div>
 
                 <!-- Цвет -->
                 <div class="mb-6">
                     <h4 class="text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold mb-2.5">Цвет</h4>
-                    <div class="flex items-center gap-3 flex-wrap pl-1" id="color-buttons-container">
-                        <!-- JS Generated -->
-                    </div>
+                    <div class="flex items-center gap-3 flex-wrap pl-1" id="color-buttons-container"></div>
                 </div>
 
                 <div class="mt-auto pt-4 border-t border-white/5 flex justify-between items-center">
@@ -410,9 +403,9 @@
             </div>
         </div>
     </div>
-
-<!-- ================================================================================= -->
-    <!-- ORDER DETAILS OVERLAY (ДЕТАЛИ ЗАКАЗА + ТРЕКИНГ) -->
+    
+    <!-- ================================================================================= -->
+    <!-- ORDER DETAILS OVERLAY (ДЕТАЛИ ЗАКАЗА) -->
     <!-- ================================================================================= -->
     <div id="order-details-overlay" class="fixed inset-0 z-50 bg-background-dark transform translate-y-full transition-transform duration-300 flex flex-col">
         <!-- Header -->
@@ -420,37 +413,39 @@
             <button onclick="closeOrderDetails()" class="flex size-10 items-center justify-center rounded-full glass text-white">
                 <span class="material-symbols-outlined">arrow_back</span>
             </button>
-            <h2 class="text-lg font-bold" id="order-detail-title">Заказ #...</h2>
+            <h2 class="text-lg font-bold" id="od-title">Заказ #...</h2>
             <div class="w-10"></div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6 pb-24">
+        <div class="flex-1 overflow-y-auto p-6 pb-24 hide-scrollbar">
             
             <!-- СТАТУС / ТРЕКИНГ -->
             <div class="bg-surface-dark border border-white/5 rounded-2xl p-5 mb-6">
-                <h3 class="text-white/50 text-xs font-bold uppercase tracking-widest mb-4">Статус доставки</h3>
-                
-                <!-- Таймлайн -->
-                <div class="relative pl-2 space-y-6 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-white/10" id="order-timeline">
-                    <!-- JS заполнит это -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-white/50 text-xs font-bold uppercase tracking-widest">Статус доставки</h3>
+                    <span class="text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded" id="od-status-badge">Оплачен</span>
                 </div>
+                
+                <div class="relative pl-2 space-y-6 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-white/10" id="order-timeline"></div>
             </div>
 
             <!-- СПИСОК ТОВАРОВ -->
-            <h3 class="text-white/50 text-xs font-bold uppercase tracking-widest mb-3 px-1">Товары в посылке</h3>
-            <div class="space-y-3" id="order-items-list">
-                <!-- JS заполнит это -->
-            </div>
+            <h3 class="text-white/50 text-xs font-bold uppercase tracking-widest mb-3 px-1">Товары в посылке (<span id="od-items-count">0</span>)</h3>
+            <div class="space-y-3 mb-6" id="od-items-list"></div>
 
             <!-- ИНФО О ДОСТАВКЕ -->
-            <div class="mt-6 p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/5 space-y-3">
                 <div class="flex justify-between text-sm">
                     <span class="text-white/50">Получатель</span>
                     <span class="text-white text-right" id="od-name">...</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-white/50">Адрес</span>
-                    <span class="text-white text-right w-1/2 break-words" id="od-address">...</span>
+                    <span class="text-white text-right w-1/2 break-words text-xs" id="od-address">...</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-white/50">Доставка</span>
+                    <span class="text-white text-right" id="od-method">...</span>
                 </div>
                 <div class="h-px bg-white/10 my-2"></div>
                 <div class="flex justify-between items-center">
@@ -461,6 +456,8 @@
 
         </div>
     </div>
+
+
     <!-- ================================================================================= -->
     <!-- CHECKOUT OVERLAY -->
     <!-- ================================================================================= -->
@@ -562,11 +559,11 @@
         let userPointsBalance = 0; 
         let finalTotal = 0;     
         
-        // Храним данные корзины локально для редактирования
         let cartItemsData = [];
         let editingItemId = null;
         let selectedSize = null;
         let selectedColor = null;
+        let ordersData = [];
         
         // --- 1. АВТОРИЗАЦИЯ ---
         const user = tg.initDataUnsafe.user;
@@ -590,8 +587,15 @@
                         username: userData.username
                     })
                 });
+                
+                // Проверка на пустой ответ перед парсингом JSON
+                const text = await res.text();
+                if (!text) {
+                     console.warn('initApp: Empty response');
+                     return;
+                }
+                const json = JSON.parse(text);
 
-                const json = await res.json();
                 if (json.status === 'success') {
                     const data = json.data;
                     if(document.getElementById('home-username')) document.getElementById('home-username').innerText = data.name;
@@ -610,8 +614,10 @@
                 }
             } catch (e) {
                 console.error('Auth Error:', e);
-                loadOrders();
             }
+            
+            // Загружаем заказы на главной
+            loadOrders();
         }
         
         initApp();
@@ -654,217 +660,7 @@
                 document.body.classList.remove('keyboard-open');
             });
         });
-// --- ПЕРЕМЕННЫЕ ДЛЯ ЗАКАЗОВ ---
-        let ordersData = [];
 
-       // ЗАГРУЗКА ИСТОРИИ ЗАКАЗОВ (ГЛАВНАЯ + ПРОФИЛЬ) ---
-        async function loadOrders() {
-            // 1. Ищем контейнеры
-            const profileContainer = document.getElementById('orders-list');
-            const homeContainer = document.getElementById('home-orders-container');
-            
-            // Если мы не на тех вкладках, где есть эти контейнеры, ничего не делаем, 
-            // но загрузку данных все равно можно выполнить.
-            
-            try {
-                const GET_ORDERS_URL = 'https://proshein.com/webhook/get-orders';
-                const tgId = user ? user.id : 1332986231;
-
-                const res = await fetch(`${GET_ORDERS_URL}?tg_id=${tgId}`);
-                const json = await res.json();
-                
-                // УНИВЕРСАЛЬНЫЙ ПАРСИНГ:
-                // n8n может вернуть массив [..] или объект { items: [..] }
-                let orders = [];
-                if (Array.isArray(json)) {
-                    orders = json;
-                } else if (json.items && Array.isArray(json.items)) {
-                    orders = json.items;
-                }
-
-                // Сохраняем глобально для открытия деталей
-                ordersData = orders;
-
-                // --- А. ОБНОВЛЯЕМ ПРОФИЛЬ ---
-                if (profileContainer) {
-                    if (orders.length === 0) {
-                        profileContainer.innerHTML = `
-                            <div class="flex flex-col items-center justify-center py-6 opacity-30">
-                                 <span class="material-symbols-outlined text-4xl mb-2">history</span>
-                                 <p class="text-xs">История заказов пуста</p>
-                            </div>`;
-                    } else {
-                        profileContainer.innerHTML = ''; // Чистим
-                        orders.forEach(order => {
-                            renderOrderCard(profileContainer, order, 'profile');
-                        });
-                    }
-                }
-
-                // --- Б. ОБНОВЛЯЕМ ГЛАВНУЮ ---
-                if (homeContainer) {
-                    if (orders.length === 0) {
-                        homeContainer.innerHTML = `
-                            <div class="p-4 text-center text-white/30 text-xs border border-dashed border-white/10 rounded-xl">
-                                Нет активных заказов
-                            </div>`;
-                    } else {
-                        homeContainer.innerHTML = ''; // Чистим
-                        // Берем только ПЕРВЫЙ (самый свежий) заказ для главной
-                        renderOrderCard(homeContainer, orders[0], 'home');
-                    }
-                }
-
-            } catch (e) {
-                console.error(e);
-                if (profileContainer) profileContainer.innerHTML = '<div class="text-center text-red-400 py-4 text-xs">Ошибка загрузки</div>';
-            }
-        }
-
-        // Вспомогательная функция для рисования карточки
-        function renderOrderCard(container, order, type) {
-            const date = new Date(order.created_at).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
-            const shortId = order.id.substring(0, 8).toUpperCase();
-            
-            // Статус
-            let statusText = 'В обработке';
-            let statusColor = 'text-white/50';
-            if (order.status === 'paid') { statusText = 'Оплачен'; statusColor = 'text-emerald-400'; }
-            if (order.status === 'shipping') { statusText = 'В пути'; statusColor = 'text-blue-400'; }
-
-            // Картинка товара (берем первую из заказа)
-            let imgUrl = '';
-            let itemText = 'товаров';
-            
-            if (order.order_items && order.order_items.length > 0) {
-                imgUrl = order.order_items[0].image_url;
-                // Название первого товара для главной
-                if (type === 'home') {
-                    itemText = order.order_items[0].product_name;
-                } else {
-                    itemText = `${order.order_items.length} тов.`;
-                }
-            }
-
-            // HTML Карточки
-            const html = `
-            <div onclick="openOrderDetails('${order.id}')" class="group flex items-center gap-4 p-3 rounded-2xl bg-[#1c2636]/60 border border-white/5 hover:bg-[#1c2636] transition-all duration-300 active:scale-95 cursor-pointer">
-                <div class="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white/5">
-                    ${imgUrl ? `<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${imgUrl}');"></div>` : '<span class="material-symbols-outlined text-white/20 m-auto">local_mall</span>'}
-                </div>
-                <div class="flex flex-1 flex-col justify-center">
-                    <div class="flex justify-between items-start">
-                        <h4 class="text-white font-medium text-sm line-clamp-1 pr-2">${type === 'home' ? itemText : `Заказ #${shortId}`}</h4>
-                        <span class="text-white font-bold text-sm whitespace-nowrap">${order.total_amount.toLocaleString()} ₽</span>
-                    </div>
-                    <div class="flex justify-between items-center mt-1">
-                        <p class="text-white/40 text-xs">${type === 'home' ? `Заказ #${shortId}` : date}</p>
-                        <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/5">
-                            <span class="size-1.5 rounded-full ${order.status === 'paid' ? 'bg-primary' : 'bg-gray-500'} animate-pulse"></span>
-                            <span class="${statusColor} text-[10px] font-bold uppercase tracking-wider">${statusText}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-            
-            container.insertAdjacentHTML('beforeend', html);
-        }
-
-        // --- ОТКРЫТИЕ ДЕТАЛЕЙ ЗАКАЗА ---
-        function openOrderDetails(orderId) {
-            const order = ordersData.find(o => o.id === orderId);
-            if(!order) return;
-
-            // 1. Заполняем инфо
-            const shortId = order.id.substring(0, 8).toUpperCase();
-            document.getElementById('order-detail-title').innerText = `Заказ #${shortId}`;
-            document.getElementById('od-name').innerText = order.contact_name;
-            document.getElementById('od-address').innerText = order.delivery_address;
-            document.getElementById('od-total').innerText = order.total_amount.toLocaleString() + ' ₽';
-
-            // 2. Рисуем товары
-            const itemsContainer = document.getElementById('order-items-list');
-            itemsContainer.innerHTML = '';
-            
-            order.order_items.forEach(item => {
-                const html = `
-                <div class="flex gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                    <div class="w-12 h-16 rounded bg-black/20 bg-cover bg-center shrink-0" style="background-image: url('${item.image_url}')"></div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-white text-xs font-medium line-clamp-2">${item.product_name}</p>
-                        <p class="text-white/40 text-[10px] mt-1">
-                            ${item.size} • ${item.color || '-'} • x${item.quantity || 1}
-                        </p>
-                    </div>
-                    <div class="text-white text-sm font-bold whitespace-nowrap">
-                        ${item.price_at_purchase.toLocaleString()} ₽
-                    </div>
-                </div>`;
-                itemsContainer.insertAdjacentHTML('beforeend', html);
-            });
-
-            // 3. Рисуем Таймлайн (Логика статусов)
-            renderTimeline(order.status, order.created_at);
-
-            // Открываем
-            document.getElementById('order-details-overlay').classList.remove('translate-y-full');
-            tg.BackButton.show();
-            tg.BackButton.onClick(closeOrderDetails);
-        }
-
-        function closeOrderDetails() {
-            document.getElementById('order-details-overlay').classList.add('translate-y-full');
-            tg.BackButton.hide();
-        }
-
-        // --- ГЕНЕРАТОР ТАЙМЛАЙНА ---
-        function renderTimeline(currentStatus, createdDate) {
-            const timeline = document.getElementById('order-timeline');
-            timeline.innerHTML = '';
-
-            // Этапы (можно расширять)
-            const steps = [
-                { id: 'paid', label: 'Оплачен', icon: 'credit_score' },
-                { id: 'purchased', label: 'Выкуплен (Shein)', icon: 'shopping_bag' },
-                { id: 'warehouse_cn', label: 'Склад Китай', icon: 'warehouse' },
-                { id: 'shipping', label: 'В пути в РФ', icon: 'flight_takeoff' },
-                { id: 'arrived_ru', label: 'Прибыл в РФ', icon: 'flag' },
-                { id: 'delivery', label: 'Передан в доставку', icon: 'local_shipping' }
-            ];
-
-            // Простая логика: если статус "paid", то активен 1 шаг. 
-            // В реальности ты будешь менять статус в базе (purchased, shipping...)
-            // Пока сделаем эмуляцию: всегда активен 1 шаг + дата
-            
-            // Определяем индекс текущего шага (пока заглушка на 'paid')
-            let activeIndex = steps.findIndex(s => s.id === currentStatus);
-            if (activeIndex === -1) activeIndex = 0; // По дефолту первый
-
-            steps.forEach((step, index) => {
-                const isCompleted = index <= activeIndex;
-                const isCurrent = index === activeIndex;
-                
-                let colorClass = isCompleted ? 'bg-primary text-black' : 'bg-white/10 text-white/30';
-                let textClass = isCompleted ? 'text-white' : 'text-white/30';
-                let subText = isCurrent ? new Date(createdDate).toLocaleDateString() : '';
-
-                if (isCurrent) {
-                    colorClass = 'bg-primary text-black shadow-[0_0_15px_rgba(19,236,91,0.4)]';
-                }
-
-                const html = `
-                <div class="relative flex items-center gap-4 z-10">
-                    <div class="w-6 h-6 rounded-full ${colorClass} flex items-center justify-center shrink-0 border-2 border-[#101622]">
-                        <span class="material-symbols-outlined text-[14px]">${step.icon}</span>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium ${textClass}">${step.label}</p>
-                        ${subText ? `<p class="text-[10px] text-primary">${subText}</p>` : ''}
-                    </div>
-                </div>`;
-                timeline.insertAdjacentHTML('beforeend', html);
-            });
-        }
         // --- ЛОГИКА СКИДОК И БАЛЛОВ ---
         function recalcTotal() {
             if (currentPoints > cartSubtotal) {
@@ -961,9 +757,7 @@
             const item = cartItemsData.find(i => i.id == id);
             if (!item) return;
 
-            // Если количество не установлено - ставим 1
             if (!item.quantity) item.quantity = 1;
-            
             item.quantity += delta;
             if (item.quantity < 1) item.quantity = 1;
 
@@ -971,40 +765,28 @@
             tg.HapticFeedback.selectionChanged();
         }
 
-
-        // --- ПРОДУКТОВЫЕ ОПЦИИ (ВЫБОР РАЗМЕРА/ЦВЕТА) ---
-        
-        // 1. Открытие окна (Сброс состояния)
+        // --- ПРОДУКТОВЫЕ ОПЦИИ ---
         function openProductOptions(id) {
             const item = cartItemsData.find(i => i.id == id);
             if (!item) return;
             
             editingItemId = id;
-            
-            // Инициализируем выбор текущим значением из базы
-            // Если в базе "NOT_SELECTED", то выделения нет (null)
             selectedSize = (item.size === 'NOT_SELECTED') ? null : item.size;
             selectedColor = item.color || "As shown";
             
-            // Ставим картинку
             const imgEl = document.getElementById('overlay-product-image');
             if(imgEl) imgEl.style.backgroundImage = `url('${item.image_url}')`;
 
-            // Рисуем кнопки
             renderModalButtons(item);
             
-            // Показываем окно
             const overlay = document.getElementById('product-options-overlay');
             if(overlay) overlay.classList.remove('hidden');
         }
 
-        // 2. Отрисовка кнопок (Без сброса состояния)
         function renderModalButtons(item) {
-            // --- Рендер Размеров ---
             const sizeContainer = document.getElementById('size-buttons-container');
             if(sizeContainer) {
                 sizeContainer.innerHTML = '';
-                // Берем опции из товара или дефолтные
                 const options = (item.size_options && item.size_options.length > 0) 
                     ? item.size_options 
                     : [{name:'XS'}, {name:'S'}, {name:'M'}, {name:'L'}, {name:'XL'}];
@@ -1013,7 +795,6 @@
                     const btn = document.createElement('button');
                     const isSelected = opt.name === selectedSize;
                     
-                    // Стили: Активный vs Неактивный
                     let classes = "w-10 h-10 rounded-lg border text-[12px] font-medium transition-all flex items-center justify-center mr-2 mb-2";
                     if (isSelected) {
                         classes += " bg-primary text-[#102216] font-bold border-primary shadow-lg shadow-primary/20 scale-110";
@@ -1023,23 +804,18 @@
                     
                     btn.className = classes;
                     btn.innerText = opt.name;
-                    
-                    // Важно: при клике просто обновляем переменную и перерисовываем кнопки
                     btn.onclick = () => {
                         selectedSize = opt.name;
-                        renderModalButtons(item); // Перерисовать только кнопки
+                        renderModalButtons(item); 
                         tg.HapticFeedback.selectionChanged();
                     };
                     sizeContainer.appendChild(btn);
                 });
             }
 
-            // --- Рендер Цветов ---
             const colorContainer = document.getElementById('color-buttons-container');
             if(colorContainer) {
                 colorContainer.innerHTML = '';
-                
-                // Набор цветов (можно расширить или брать из базы, если есть)
                 const colors = [
                     {name: item.color || "As shown", hex: "#fff", border: true}, 
                     {name: "Black", hex: "#000"}, 
@@ -1049,23 +825,19 @@
                     {name: "Red", hex: "#ef4444"}
                 ];
                 
-                // Убираем дубликаты (если текущий цвет совпадает с палитрой)
                 const uniqueColors = [...new Map(colors.map(c => [c.name, c])).values()];
 
                 uniqueColors.forEach(col => {
                     const btn = document.createElement('button');
                     const isSelected = col.name === selectedColor;
-                    
                     let classes = `w-8 h-8 rounded-full transition-transform mb-2 `;
                     
-                    // Стиль выделения
                     if (isSelected) {
                         classes += "scale-125 ring-2 ring-primary ring-offset-2 ring-offset-[#151c28]";
                     } else {
                         classes += "hover:scale-110 ring-1 ring-white/10";
                     }
 
-                    // Если цвет белый, добавляем серую границу внутри, чтобы не сливался
                     if (col.hex === '#fff' || col.border) {
                         btn.style.border = "1px solid rgba(255,255,255,0.3)";
                     }
@@ -1083,13 +855,11 @@
             }
         }
 
-        // 3. Закрытие
         function closeProductOptions() {
             const overlay = document.getElementById('product-options-overlay');
             if(overlay) overlay.classList.add('hidden');
         }
 
-        // 4. Сохранение (Применить изменения)
         function updateCartItem() {
             if (!selectedSize) {
                 tg.HapticFeedback.notificationOccurred('error');
@@ -1099,16 +869,14 @@
             
             const itemIndex = cartItemsData.findIndex(i => i.id == editingItemId);
             if (itemIndex > -1) {
-                // Обновляем локально
                 cartItemsData[itemIndex].size = selectedSize;
                 cartItemsData[itemIndex].color = selectedColor;
-                
-                // Перерисовываем корзину
                 renderCartItems(); 
                 closeProductOptions();
                 tg.HapticFeedback.notificationOccurred('success');
             }
         }
+
 
         // --- 2. КОРЗИНА ---
         async function loadCart() {
@@ -1129,11 +897,19 @@
                 const tgId = user ? user.id : 1332986231;
 
                 const res = await fetch(`${GET_CART_URL}?tg_id=${tgId}`);
-                const json = await res.json();
+                
+                 // Проверка на пустой ответ
+                const text = await res.text();
+                if (!text) {
+                     container.innerHTML = `<div class="flex flex-col items-center justify-center pt-10 opacity-50"><span class="material-symbols-outlined text-[48px] mb-2">production_quantity_limits</span><p>Корзина пуста</p></div>`;
+                     cartSubtotal = 0;
+                     recalcTotal();
+                     return;
+                }
+                const json = JSON.parse(text);
 
                 cartItemsData = json.items || (Array.isArray(json) ? json : []);
                 
-                // Проставляем дефолтное количество 1, если его нет
                 cartItemsData.forEach(item => {
                     if (!item.quantity) item.quantity = 1;
                 });
@@ -1167,12 +943,10 @@
             let totalPrice = 0;
 
             cartItemsData.forEach(item => {
-                // Цена с учетом количества
                 const unitPrice = item.final_price_rub || 0;
                 const totalItemPrice = unitPrice * item.quantity;
                 totalPrice += totalItemPrice;
 
-                // ЛОГИКА РАЗМЕРА:
                 let infoHtml = '';
                 let warningClass = ''; 
 
@@ -1212,8 +986,6 @@
                             </div>
                             <div class="flex items-center justify-between mt-2">
                                 <span class="text-primary font-bold text-base">${totalItemPrice.toLocaleString()} ₽</span>
-                                
-                                <!-- QUANTITY CONTROL -->
                                 <div class="flex items-center gap-3 bg-white/5 rounded-lg px-2 py-1 border border-white/5 pointer-events-auto" onclick="event.stopPropagation()">
                                     <button class="w-5 h-5 flex items-center justify-center text-white/50 hover:text-white" onclick="changeQuantity('${item.id}', -1)">
                                         <span class="material-symbols-outlined text-[14px]">remove</span>
@@ -1300,11 +1072,16 @@
                         },
                         final_total: finalTotal,
                         discount_applied: currentDiscount + currentPoints,
-                        items: cartItemsData // Отправляем актуальные данные (с кол-вом и размерами)
+                        items: cartItemsData 
                     })
                 });
 
-                const json = await res.json();
+                // Проверка на пустой ответ перед парсингом
+                const text = await res.text();
+                if (!text) {
+                     throw new Error('Empty response from server');
+                }
+                const json = JSON.parse(text);
 
                 if (json.status === 'success' && json.order_id) {
                     tg.HapticFeedback.notificationOccurred('success');
@@ -1374,7 +1151,12 @@
                     })
                 });
 
-                const json = await res.json();
+                // Безопасный парсинг JSON
+                const text = await res.text();
+                if (!text) {
+                     throw new Error('Empty response from parser');
+                }
+                const json = JSON.parse(text);
 
                 if (json.status === 'success') {
                     tg.HapticFeedback.notificationOccurred('success');
@@ -1394,6 +1176,209 @@
             }
         }
 
+        // --- 6. ЗАГРУЗКА ЗАКАЗОВ ---
+        async function loadOrders() {
+            const profileContainer = document.getElementById('orders-list');
+            const homeContainer = document.getElementById('home-orders-container');
+            
+            try {
+                const GET_ORDERS_URL = 'https://proshein.com/webhook/get-orders';
+                const tgId = user ? user.id : 1332986231;
+
+                const res = await fetch(`${GET_ORDERS_URL}?tg_id=${tgId}`);
+                
+                // Безопасный парсинг JSON
+                const text = await res.text();
+                if (!text) return; // Просто выходим если пусто, не ломая интерфейс
+                const json = JSON.parse(text);
+                
+                let orders = [];
+                if (Array.isArray(json)) {
+                    orders = json;
+                } else if (json.items && Array.isArray(json.items)) {
+                    orders = json.items;
+                }
+
+                ordersData = orders;
+
+                // --- А. ОБНОВЛЯЕМ ПРОФИЛЬ ---
+                if (profileContainer) {
+                    if (orders.length === 0) {
+                        profileContainer.innerHTML = `
+                            <div class="flex flex-col items-center justify-center py-6 opacity-30">
+                                 <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                                 <p class="text-xs">История заказов пуста</p>
+                            </div>`;
+                    } else {
+                        profileContainer.innerHTML = ''; // Чистим
+                        orders.forEach(order => {
+                            renderOrderCard(profileContainer, order, 'profile');
+                        });
+                    }
+                }
+
+                // --- Б. ОБНОВЛЯЕМ ГЛАВНУЮ ---
+                if (homeContainer) {
+                    if (orders.length === 0) {
+                        homeContainer.innerHTML = `
+                            <div class="p-4 text-center text-white/30 text-xs border border-dashed border-white/10 rounded-xl">
+                                Нет активных заказов
+                            </div>`;
+                    } else {
+                        homeContainer.innerHTML = ''; // Чистим
+                        // Берем только ПЕРВЫЙ (самый свежий) заказ для главной
+                        renderOrderCard(homeContainer, orders[0], 'home');
+                    }
+                }
+
+            } catch (e) {
+                console.error(e);
+                if (profileContainer) profileContainer.innerHTML = '<div class="text-center text-red-400 py-4 text-xs">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderOrderCard(container, order, type) {
+            const date = new Date(order.created_at).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
+            const shortId = order.id.substring(0, 8).toUpperCase();
+            
+            let statusText = 'В обработке';
+            let statusColor = 'text-white/50';
+            if (order.status === 'paid') { statusText = 'Оплачен'; statusColor = 'text-emerald-400'; }
+            if (order.status === 'shipping') { statusText = 'В пути'; statusColor = 'text-blue-400'; }
+
+            let imgUrl = '';
+            let itemText = 'товаров';
+            
+            if (order.order_items && order.order_items.length > 0) {
+                imgUrl = order.order_items[0].image_url;
+                if (type === 'home') {
+                    itemText = order.order_items[0].product_name;
+                } else {
+                    itemText = `${order.order_items.length} тов.`;
+                }
+            }
+
+            const html = `
+            <div onclick="openOrderDetails('${order.id}')" class="group flex items-center gap-4 p-3 rounded-2xl bg-[#1c2636]/60 border border-white/5 hover:bg-[#1c2636] transition-all duration-300 active:scale-95 cursor-pointer">
+                <div class="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white/5">
+                    ${imgUrl ? `<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${imgUrl}');"></div>` : '<span class="material-symbols-outlined text-white/20 m-auto">local_mall</span>'}
+                </div>
+                <div class="flex flex-1 flex-col justify-center">
+                    <div class="flex justify-between items-start">
+                        <h4 class="text-white font-medium text-sm line-clamp-1 pr-2">${type === 'home' ? itemText : `Заказ #${shortId}`}</h4>
+                        <span class="text-white font-bold text-sm whitespace-nowrap">${order.total_amount.toLocaleString()} ₽</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-white/40 text-xs">${type === 'home' ? `Заказ #${shortId}` : date}</p>
+                        <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/5">
+                            <span class="size-1.5 rounded-full ${order.status === 'paid' ? 'bg-primary' : 'bg-gray-500'} animate-pulse"></span>
+                            <span class="${statusColor} text-[10px] font-bold uppercase tracking-wider">${statusText}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        // --- ДЕТАЛИ ЗАКАЗА ---
+        function openOrderDetails(orderId) {
+            const order = ordersData.find(o => o.id === orderId);
+            if(!order) return;
+
+            const shortId = order.id.substring(0, 8).toUpperCase();
+            
+            document.getElementById('od-title').innerText = `Заказ #${shortId}`;
+            document.getElementById('od-name').innerText = order.contact_name || 'Клиент';
+            document.getElementById('od-address').innerText = order.delivery_address || '-';
+            document.getElementById('od-method').innerText = order.delivery_method || 'Доставка';
+            document.getElementById('od-total').innerText = (order.total_amount || 0).toLocaleString() + ' ₽';
+            document.getElementById('od-status-badge').innerText = order.status === 'paid' ? 'Оплачен' : order.status;
+            
+            if(document.getElementById('od-items-count')) {
+                 document.getElementById('od-items-count').innerText = order.order_items ? order.order_items.length : 0;
+            }
+
+            const itemsContainer = document.getElementById('od-items-list');
+            itemsContainer.innerHTML = '';
+            
+            if(order.order_items) {
+                order.order_items.forEach(item => {
+                    const html = `
+                    <div class="flex gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                        <div class="w-12 h-16 rounded bg-black/20 bg-cover bg-center shrink-0" style="background-image: url('${item.image_url}')"></div>
+                        <div class="flex-1 min-w-0 flex flex-col justify-center">
+                            <p class="text-white text-xs font-medium line-clamp-2 leading-tight">${item.product_name}</p>
+                            <p class="text-white/40 text-[10px] mt-1">
+                                ${item.size} • ${item.color || '-'} • x${item.quantity || 1}
+                            </p>
+                        </div>
+                        <div class="text-white text-sm font-bold whitespace-nowrap self-center">
+                            ${(item.price_at_purchase || 0).toLocaleString()} ₽
+                        </div>
+                    </div>`;
+                    itemsContainer.insertAdjacentHTML('beforeend', html);
+                });
+            }
+
+            renderTimeline(order.status, order.created_at);
+
+            document.getElementById('order-details-overlay').classList.remove('translate-y-full');
+            tg.BackButton.show();
+            tg.BackButton.onClick(closeOrderDetails);
+        }
+
+        function closeOrderDetails() {
+            document.getElementById('order-details-overlay').classList.add('translate-y-full');
+            tg.BackButton.hide();
+        }
+
+        function renderTimeline(currentStatus, createdDate) {
+            const timeline = document.getElementById('order-timeline');
+            timeline.innerHTML = '';
+
+            const steps = [
+                { id: 'paid', label: 'Оплачен', icon: 'credit_score' },
+                { id: 'purchased', label: 'Выкуплен (Shein)', icon: 'shopping_bag' },
+                { id: 'warehouse_cn', label: 'Склад Китай', icon: 'warehouse' },
+                { id: 'shipping', label: 'В пути в РФ', icon: 'flight_takeoff' },
+                { id: 'arrived_ru', label: 'Прибыл в РФ', icon: 'flag' },
+                { id: 'delivery', label: 'В доставке (СДЭК/Почта)', icon: 'local_shipping' }
+            ];
+
+            let activeIndex = steps.findIndex(s => s.id === currentStatus);
+            if (activeIndex === -1) activeIndex = 0; 
+
+            steps.forEach((step, index) => {
+                const isCompleted = index <= activeIndex;
+                const isCurrent = index === activeIndex;
+                
+                let colorClass = isCompleted ? 'bg-primary text-black border-primary' : 'bg-background-dark text-white/20 border-white/10';
+                let textClass = isCompleted ? 'text-white' : 'text-white/30';
+                let subText = '';
+
+                if (index === 0) subText = new Date(createdDate).toLocaleDateString('ru-RU');
+                if (isCurrent && index > 0) subText = 'Текущий статус';
+
+                if (isCurrent) {
+                    colorClass = 'bg-primary text-black shadow-[0_0_15px_rgba(19,236,91,0.5)] border-primary scale-110';
+                }
+
+                const html = `
+                <div class="relative flex items-center gap-4 z-10">
+                    <div class="w-6 h-6 rounded-full ${colorClass} flex items-center justify-center shrink-0 border-2 transition-all">
+                        <span class="material-symbols-outlined text-[14px]">${step.icon}</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium ${textClass} transition-colors">${step.label}</p>
+                        ${subText ? `<p class="text-[10px] text-primary/80 font-medium">${subText}</p>` : ''}
+                    </div>
+                </div>`;
+                timeline.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => {
@@ -1403,9 +1388,6 @@
             
             const target = document.getElementById('tab-' + tabName);
             if(target) target.classList.add('active');
-            if (tabName === 'profile') {
-                loadOrders();
-            }
 
             const activeBtn = document.getElementById('btn-' + tabName);
             if(activeBtn) {
@@ -1418,6 +1400,9 @@
             if (tabName === 'cart') {
                 loadCart();
             }
+            if (tabName === 'profile') {
+                loadOrders();
+            }
         }
         
         function deleteItem(dbId) {
@@ -1427,7 +1412,3 @@
     </script>
 </body>
 </html>
-
-
-
-
