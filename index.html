@@ -706,112 +706,142 @@
 
 
         // --- ПРОДУКТОВЫЕ ОПЦИИ (ВЫБОР РАЗМЕРА/ЦВЕТА) ---
+        
+        // 1. Открытие окна (Сброс состояния)
         function openProductOptions(id) {
             const item = cartItemsData.find(i => i.id == id);
             if (!item) return;
             
             editingItemId = id;
-            selectedSize = item.size === 'NOT_SELECTED' ? null : item.size;
+            
+            // Инициализируем выбор текущим значением из базы
+            // Если в базе "NOT_SELECTED", то выделения нет (null)
+            selectedSize = (item.size === 'NOT_SELECTED') ? null : item.size;
             selectedColor = item.color || "As shown";
             
-            // 1. Ставим картинку
+            // Ставим картинку
             const imgEl = document.getElementById('overlay-product-image');
             if(imgEl) imgEl.style.backgroundImage = `url('${item.image_url}')`;
+
+            // Рисуем кнопки
+            renderModalButtons(item);
             
-            // 2. Рендерим размеры
+            // Показываем окно
+            const overlay = document.getElementById('product-options-overlay');
+            if(overlay) overlay.classList.remove('hidden');
+        }
+
+        // 2. Отрисовка кнопок (Без сброса состояния)
+        function renderModalButtons(item) {
+            // --- Рендер Размеров ---
             const sizeContainer = document.getElementById('size-buttons-container');
             if(sizeContainer) {
                 sizeContainer.innerHTML = '';
+                // Берем опции из товара или дефолтные
                 const options = (item.size_options && item.size_options.length > 0) 
                     ? item.size_options 
                     : [{name:'XS'}, {name:'S'}, {name:'M'}, {name:'L'}, {name:'XL'}];
                 
                 options.forEach(opt => {
                     const btn = document.createElement('button');
+                    const isSelected = opt.name === selectedSize;
+                    
+                    // Стили: Активный vs Неактивный
                     let classes = "w-10 h-10 rounded-lg border text-[12px] font-medium transition-all flex items-center justify-center mr-2 mb-2";
-                    if (opt.name === selectedSize) {
-                        classes += " bg-primary text-[#102216] font-bold border-primary shadow-lg shadow-primary/20";
+                    if (isSelected) {
+                        classes += " bg-primary text-[#102216] font-bold border-primary shadow-lg shadow-primary/20 scale-110";
                     } else {
                         classes += " bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:border-white/30 hover:text-white";
                     }
+                    
                     btn.className = classes;
                     btn.innerText = opt.name;
-                    btn.onclick = () => selectSizeOption(opt.name);
+                    
+                    // Важно: при клике просто обновляем переменную и перерисовываем кнопки
+                    btn.onclick = () => {
+                        selectedSize = opt.name;
+                        renderModalButtons(item); // Перерисовать только кнопки
+                        tg.HapticFeedback.selectionChanged();
+                    };
                     sizeContainer.appendChild(btn);
                 });
             }
 
-            // 3. Рендерим цвета (Имитация, если их нет в базе)
+            // --- Рендер Цветов ---
             const colorContainer = document.getElementById('color-buttons-container');
             if(colorContainer) {
                 colorContainer.innerHTML = '';
-                // Если с сервера пришел только один цвет - покажем его. Если нет - дадим выбор.
-                // В будущем сюда передадим массив цветов из БД.
+                
+                // Набор цветов (можно расширить или брать из базы, если есть)
                 const colors = [
-                    {name: item.color || "As shown", hex: "#fff"}, 
+                    {name: item.color || "As shown", hex: "#fff", border: true}, 
                     {name: "Black", hex: "#000"}, 
-                    {name: "White", hex: "#fff"},
+                    {name: "White", hex: "#fff", border: true},
                     {name: "Green", hex: "#10b981"},
-                    {name: "Blue", hex: "#3b82f6"}
+                    {name: "Blue", hex: "#3b82f6"},
+                    {name: "Red", hex: "#ef4444"}
                 ];
                 
-                // Очищаем дубликаты
-                const uniqueColors = [...new Map(colors.map(item => [item['name'], item])).values()];
+                // Убираем дубликаты (если текущий цвет совпадает с палитрой)
+                const uniqueColors = [...new Map(colors.map(c => [c.name, c])).values()];
 
                 uniqueColors.forEach(col => {
                     const btn = document.createElement('button');
                     const isSelected = col.name === selectedColor;
                     
-                    btn.className = `w-8 h-8 rounded-full border-2 transition-transform ${isSelected ? 'border-primary scale-110 ring-2 ring-primary/30' : 'border-transparent hover:scale-105'}`;
+                    let classes = `w-8 h-8 rounded-full transition-transform mb-2 `;
+                    
+                    // Стиль выделения
+                    if (isSelected) {
+                        classes += "scale-125 ring-2 ring-primary ring-offset-2 ring-offset-[#151c28]";
+                    } else {
+                        classes += "hover:scale-110 ring-1 ring-white/10";
+                    }
+
+                    // Если цвет белый, добавляем серую границу внутри, чтобы не сливался
+                    if (col.hex === '#fff' || col.border) {
+                        btn.style.border = "1px solid rgba(255,255,255,0.3)";
+                    }
+
+                    btn.className = classes;
                     btn.style.backgroundColor = col.hex;
                     
-                    // Если цвет белый, добавим рамку чтобы видно было
-                    if(col.hex === '#fff') btn.classList.add('border-gray-500');
-
-                    btn.onclick = () => selectColorOption(col.name);
+                    btn.onclick = () => {
+                        selectedColor = col.name;
+                        renderModalButtons(item);
+                        tg.HapticFeedback.selectionChanged();
+                    };
                     colorContainer.appendChild(btn);
                 });
             }
-            
-            // 4. Открываем
-            const overlay = document.getElementById('product-options-overlay');
-            if(overlay) overlay.classList.remove('hidden');
         }
 
-        function selectSizeOption(size) {
-            selectedSize = size;
-            openProductOptions(editingItemId); 
-            tg.HapticFeedback.selectionChanged();
-        }
-
-        function selectColorOption(color) {
-            selectedColor = color;
-            openProductOptions(editingItemId);
-            tg.HapticFeedback.selectionChanged();
-        }
-
+        // 3. Закрытие
         function closeProductOptions() {
             const overlay = document.getElementById('product-options-overlay');
             if(overlay) overlay.classList.add('hidden');
         }
 
+        // 4. Сохранение (Применить изменения)
         function updateCartItem() {
             if (!selectedSize) {
+                tg.HapticFeedback.notificationOccurred('error');
                 tg.showAlert('Выберите размер!');
                 return;
             }
             
             const itemIndex = cartItemsData.findIndex(i => i.id == editingItemId);
             if (itemIndex > -1) {
+                // Обновляем локально
                 cartItemsData[itemIndex].size = selectedSize;
                 cartItemsData[itemIndex].color = selectedColor;
                 
+                // Перерисовываем корзину
                 renderCartItems(); 
                 closeProductOptions();
                 tg.HapticFeedback.notificationOccurred('success');
             }
         }
-
 
         // --- 2. КОРЗИНА ---
         async function loadCart() {
@@ -1127,3 +1157,4 @@
     </script>
 </body>
 </html>
+
