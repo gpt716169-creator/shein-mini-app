@@ -301,13 +301,20 @@
                 </div>
             </div>
 
-            <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-white/60">history</span>
-                    <span class="text-white font-medium">История заказов</span>
+            <!-- СПИСОК ЗАКАЗОВ (Вместо кнопки) -->
+            <div class="mb-6">
+                <div class="flex justify-between items-end mb-3 px-1">
+                    <h3 class="text-white font-bold text-lg">Мои заказы</h3>
+                    <button onclick="loadOrders()" class="text-primary text-xs flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">refresh</span> Обновить
+                    </button>
                 </div>
-                <span class="material-symbols-outlined text-white/30">chevron_right</span>
-            </button>
+                
+                <!-- Контейнер, куда JS вставит карточки -->
+                <div id="orders-list" class="space-y-3 min-h-[100px]">
+                    <div class="text-center text-white/30 py-4 text-xs">Загрузка истории...</div>
+                </div>
+            </div>
             <button class="w-full flex items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl">
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-white/60">support_agent</span>
@@ -404,7 +411,56 @@
         </div>
     </div>
 
+<!-- ================================================================================= -->
+    <!-- ORDER DETAILS OVERLAY (ДЕТАЛИ ЗАКАЗА + ТРЕКИНГ) -->
+    <!-- ================================================================================= -->
+    <div id="order-details-overlay" class="fixed inset-0 z-50 bg-background-dark transform translate-y-full transition-transform duration-300 flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 pt-8 border-b border-white/5 bg-background-dark/95 backdrop-blur-md z-20">
+            <button onclick="closeOrderDetails()" class="flex size-10 items-center justify-center rounded-full glass text-white">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h2 class="text-lg font-bold" id="order-detail-title">Заказ #...</h2>
+            <div class="w-10"></div>
+        </div>
 
+        <div class="flex-1 overflow-y-auto p-6 pb-24">
+            
+            <!-- СТАТУС / ТРЕКИНГ -->
+            <div class="bg-surface-dark border border-white/5 rounded-2xl p-5 mb-6">
+                <h3 class="text-white/50 text-xs font-bold uppercase tracking-widest mb-4">Статус доставки</h3>
+                
+                <!-- Таймлайн -->
+                <div class="relative pl-2 space-y-6 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-white/10" id="order-timeline">
+                    <!-- JS заполнит это -->
+                </div>
+            </div>
+
+            <!-- СПИСОК ТОВАРОВ -->
+            <h3 class="text-white/50 text-xs font-bold uppercase tracking-widest mb-3 px-1">Товары в посылке</h3>
+            <div class="space-y-3" id="order-items-list">
+                <!-- JS заполнит это -->
+            </div>
+
+            <!-- ИНФО О ДОСТАВКЕ -->
+            <div class="mt-6 p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-white/50">Получатель</span>
+                    <span class="text-white text-right" id="od-name">...</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-white/50">Адрес</span>
+                    <span class="text-white text-right w-1/2 break-words" id="od-address">...</span>
+                </div>
+                <div class="h-px bg-white/10 my-2"></div>
+                <div class="flex justify-between items-center">
+                    <span class="text-white font-bold">Итого оплачено</span>
+                    <span class="text-primary font-bold text-lg" id="od-total">...</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
     <!-- ================================================================================= -->
     <!-- CHECKOUT OVERLAY -->
     <!-- ================================================================================= -->
@@ -597,7 +653,160 @@
                 document.body.classList.remove('keyboard-open');
             });
         });
+// --- ПЕРЕМЕННЫЕ ДЛЯ ЗАКАЗОВ ---
+        let ordersData = [];
 
+        // --- ЗАГРУЗКА ИСТОРИИ ЗАКАЗОВ ---
+        async function loadOrders() {
+            const container = document.getElementById('orders-list');
+            if(!container) return;
+            
+            container.innerHTML = '<div class="text-center text-white/30 py-4 text-xs animate-pulse">Обновляем список...</div>';
+
+            try {
+                // Твой новый вебхук
+                const GET_ORDERS_URL = 'https://proshein.com/webhook/get-orders';
+                const tgId = user ? user.id : 1332986231;
+
+                const res = await fetch(`${GET_ORDERS_URL}?tg_id=${tgId}`);
+                const json = await res.json();
+                
+                // n8n может вернуть массив в корне или внутри ключа
+                ordersData = Array.isArray(json) ? json : (json.items || []);
+
+                if (ordersData.length === 0) {
+                    container.innerHTML = '<div class="text-center text-white/30 py-4 text-xs">История заказов пуста</div>';
+                    return;
+                }
+
+                container.innerHTML = ''; // Чистим
+
+                ordersData.forEach(order => {
+                    const date = new Date(order.created_at).toLocaleDateString('ru-RU');
+                    const shortId = order.id.substring(0, 8).toUpperCase();
+                    // Статус (можно раскрасить в зависимости от status)
+                    const statusText = order.status === 'paid' ? 'Оплачен' : order.status;
+                    
+                    const html = `
+                    <div onclick="openOrderDetails('${order.id}')" class="bg-surface-dark border border-white/5 rounded-xl p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 active:scale-95 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">inventory_2</span>
+                            </div>
+                            <div>
+                                <p class="text-white font-bold text-sm">Заказ #${shortId}</p>
+                                <p class="text-white/40 text-xs">${date} • ${order.order_items.length} тов.</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-white font-bold">${order.total_amount.toLocaleString()} ₽</p>
+                            <p class="text-emerald-400 text-[10px] uppercase font-bold tracking-wider">${statusText}</p>
+                        </div>
+                    </div>`;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div class="text-center text-red-400 py-4 text-xs">Ошибка загрузки</div>';
+            }
+        }
+
+        // --- ОТКРЫТИЕ ДЕТАЛЕЙ ЗАКАЗА ---
+        function openOrderDetails(orderId) {
+            const order = ordersData.find(o => o.id === orderId);
+            if(!order) return;
+
+            // 1. Заполняем инфо
+            const shortId = order.id.substring(0, 8).toUpperCase();
+            document.getElementById('order-detail-title').innerText = `Заказ #${shortId}`;
+            document.getElementById('od-name').innerText = order.contact_name;
+            document.getElementById('od-address').innerText = order.delivery_address;
+            document.getElementById('od-total').innerText = order.total_amount.toLocaleString() + ' ₽';
+
+            // 2. Рисуем товары
+            const itemsContainer = document.getElementById('order-items-list');
+            itemsContainer.innerHTML = '';
+            
+            order.order_items.forEach(item => {
+                const html = `
+                <div class="flex gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                    <div class="w-12 h-16 rounded bg-black/20 bg-cover bg-center shrink-0" style="background-image: url('${item.image_url}')"></div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white text-xs font-medium line-clamp-2">${item.product_name}</p>
+                        <p class="text-white/40 text-[10px] mt-1">
+                            ${item.size} • ${item.color || '-'} • x${item.quantity || 1}
+                        </p>
+                    </div>
+                    <div class="text-white text-sm font-bold whitespace-nowrap">
+                        ${item.price_at_purchase.toLocaleString()} ₽
+                    </div>
+                </div>`;
+                itemsContainer.insertAdjacentHTML('beforeend', html);
+            });
+
+            // 3. Рисуем Таймлайн (Логика статусов)
+            renderTimeline(order.status, order.created_at);
+
+            // Открываем
+            document.getElementById('order-details-overlay').classList.remove('translate-y-full');
+            tg.BackButton.show();
+            tg.BackButton.onClick(closeOrderDetails);
+        }
+
+        function closeOrderDetails() {
+            document.getElementById('order-details-overlay').classList.add('translate-y-full');
+            tg.BackButton.hide();
+        }
+
+        // --- ГЕНЕРАТОР ТАЙМЛАЙНА ---
+        function renderTimeline(currentStatus, createdDate) {
+            const timeline = document.getElementById('order-timeline');
+            timeline.innerHTML = '';
+
+            // Этапы (можно расширять)
+            const steps = [
+                { id: 'paid', label: 'Оплачен', icon: 'credit_score' },
+                { id: 'purchased', label: 'Выкуплен (Shein)', icon: 'shopping_bag' },
+                { id: 'warehouse_cn', label: 'Склад Китай', icon: 'warehouse' },
+                { id: 'shipping', label: 'В пути в РФ', icon: 'flight_takeoff' },
+                { id: 'arrived_ru', label: 'Прибыл в РФ', icon: 'flag' },
+                { id: 'delivery', label: 'Передан в доставку', icon: 'local_shipping' }
+            ];
+
+            // Простая логика: если статус "paid", то активен 1 шаг. 
+            // В реальности ты будешь менять статус в базе (purchased, shipping...)
+            // Пока сделаем эмуляцию: всегда активен 1 шаг + дата
+            
+            // Определяем индекс текущего шага (пока заглушка на 'paid')
+            let activeIndex = steps.findIndex(s => s.id === currentStatus);
+            if (activeIndex === -1) activeIndex = 0; // По дефолту первый
+
+            steps.forEach((step, index) => {
+                const isCompleted = index <= activeIndex;
+                const isCurrent = index === activeIndex;
+                
+                let colorClass = isCompleted ? 'bg-primary text-black' : 'bg-white/10 text-white/30';
+                let textClass = isCompleted ? 'text-white' : 'text-white/30';
+                let subText = isCurrent ? new Date(createdDate).toLocaleDateString() : '';
+
+                if (isCurrent) {
+                    colorClass = 'bg-primary text-black shadow-[0_0_15px_rgba(19,236,91,0.4)]';
+                }
+
+                const html = `
+                <div class="relative flex items-center gap-4 z-10">
+                    <div class="w-6 h-6 rounded-full ${colorClass} flex items-center justify-center shrink-0 border-2 border-[#101622]">
+                        <span class="material-symbols-outlined text-[14px]">${step.icon}</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium ${textClass}">${step.label}</p>
+                        ${subText ? `<p class="text-[10px] text-primary">${subText}</p>` : ''}
+                    </div>
+                </div>`;
+                timeline.insertAdjacentHTML('beforeend', html);
+            });
+        }
         // --- ЛОГИКА СКИДОК И БАЛЛОВ ---
         function recalcTotal() {
             if (currentPoints > cartSubtotal) {
@@ -1136,6 +1345,9 @@
             
             const target = document.getElementById('tab-' + tabName);
             if(target) target.classList.add('active');
+            if (tabName === 'profile') {
+                loadOrders();
+            }
 
             const activeBtn = document.getElementById('btn-' + tabName);
             if(activeBtn) {
@@ -1157,4 +1369,5 @@
     </script>
 </body>
 </html>
+
 
